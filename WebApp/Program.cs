@@ -44,4 +44,4 @@ using (var scope = app.Services.CreateScope())
 }
 
 app.MapControllers();
-app.Run();
+app.Run("http://localhost:5090");

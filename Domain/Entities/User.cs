@@ -12,4 +12,8 @@ public class User : BaseEntity
     [Required]
     public required string Email { get; set; }
     public Roles Role { get; set; }
+    
+    public Finance? Finance { get; set; }
+    public List<Product>? Products { get; set; }
+    public List<Order>? Orders { get; set; }
 }
