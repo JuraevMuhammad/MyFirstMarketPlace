@@ -1,6 +1,75 @@
-﻿namespace Infrastructure.Repositories;
+﻿using Domain.Entities;
+using Infrastructure.Data;
+using Infrastructure.Redis;
+using Microsoft.EntityFrameworkCore;
 
-public class UserRepository
+namespace Infrastructure.Repositories;
+
+public class UserRepository : IUserRepository
 {
+    private readonly ApplicationDbContext _context;
+    private readonly IRedisCache _cache;
+
+    public UserRepository(ApplicationDbContext context, RedisCache cache)
+    {
+        _context = context;
+        _cache = cache;
+    }
     
+    public async Task<User?> GetUserByIdAsync(int userId)
+    {
+        var cacheKey = $"user:{userId}";
+        
+        var cacheUser = await _cache.GetDataAsync<User>(cacheKey);
+        if (cacheUser != null)
+        {
+            Console.WriteLine("=======Get In Cache=======");
+            return cacheUser;
+        }
+        
+        var user = await _context.Users
+            .FirstOrDefaultAsync(x => x.Id == userId && !x.IsDeleted);
+        Console.WriteLine("=======Get In DataBase=======");
+        await _cache.SetDataAsync(cacheKey, user);
+        return user ?? null;
+    }
+
+    public async Task<List<User>?> GetAllUsersAsync()
+    {
+        const string key = "users:all";
+        
+        var cacheUser =  await _cache.GetDataAsync<List<User>>(key);
+        if (cacheUser != null)
+        {
+            Console.WriteLine("=======Get In Cache=======");
+            return cacheUser;
+        }
+        
+        var users = await _context.Users.Where(x => !x.IsDeleted).ToListAsync();
+        Console.WriteLine("=======Get In DataBase=======");
+        await _cache.SetDataAsync(key, users);
+        return users;
+    }
+
+    public async Task<int> DeleteUserAsync(int userId)
+    {
+        const string key = "users:all";
+        var res = await _context.Users.FirstOrDefaultAsync(x => x.Id == userId && !x.IsDeleted);
+        if (res == null)
+            return 0;
+        _context.Users.Remove(res);
+        var result = await _context.SaveChangesAsync();
+        if (result > 0)
+            await _cache.RemoveDataAsync(key);
+        return result;
+    }
+
+    public async Task<int> SaveAsync()
+    {
+        const string key = "users:all";
+         var res = await _context.SaveChangesAsync();
+         if (res > 0)
+             await _cache.RemoveDataAsync(key);
+         return res;
+    }
 }
