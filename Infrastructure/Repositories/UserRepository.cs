@@ -1,4 +1,5 @@
-﻿using Domain.Entities;
+﻿using Application.Filter;
+using Domain.Entities;
 using Infrastructure.Data;
 using Infrastructure.Redis;
 using Microsoft.EntityFrameworkCore;
@@ -14,6 +15,22 @@ public class UserRepository : IUserRepository
     {
         _context = context;
         _cache = cache;
+    }
+
+    public async Task<List<User>?> GetFilterUser(UserFilter filter)
+    {
+        var users = _context.Users
+            .Where(x => !x.IsDeleted).AsQueryable();
+
+        if (!string.IsNullOrEmpty(filter.Username))
+            users = users.Where(x => x.Username.Contains(filter.Username));
+        
+        var result = await users
+            .Where(x => !x.IsDeleted)
+            .Skip((filter.PageNumber - 1) * filter.PageSize)
+            .Take(filter.PageSize).ToListAsync();
+        
+        return result;
     }
     
     public async Task<User?> GetUserByIdAsync(int userId)

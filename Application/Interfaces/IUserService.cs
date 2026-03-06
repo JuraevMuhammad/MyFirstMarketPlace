@@ -1,4 +1,5 @@
 ﻿using Application.DTOs.User;
+using Application.Filter;
 using Application.Responses;
 using Domain.Entities;
 
@@ -8,6 +9,6 @@ public interface IUserService
 {
     Task<Response<GetUser>> GetUserByIdAsync(int userId);
     Task<Response<GetUser>> GetMe();
-    Task<Response<List<GetUser>>> GetAllUsersAsync();
+    Task<PaginationResponse<List<GetUser>>> GetAllUsersAsync(UserFilter filter);
     Task<Response<string>> UpdateUserAsync(int id, UpdatedUser user);
 }

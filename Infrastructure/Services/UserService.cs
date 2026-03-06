@@ -1,5 +1,7 @@
 ﻿using System.Net;
+using System.Security.Claims;
 using Application.DTOs.User;
+using Application.Filter;
 using Application.Interfaces;
 using Application.Responses;
 using Infrastructure.Repositories;
@@ -38,15 +40,51 @@ public class UserService : IUserService
 
     #endregion
 
-    public Task<Response<GetUser>> GetMe()
+    #region GetMe
+
+    public async Task<Response<GetUser>> GetMe()
     {
-        throw new NotImplementedException();
+        var userId = _accessor.HttpContext!.User.FindFirstValue("userId");
+        
+        if (!int.TryParse(userId, out var id))
+            return new Response<GetUser>(HttpStatusCode.Unauthorized, "invalid token");
+
+        var user = await _repository.GetUserByIdAsync(id);
+        if (user == null)
+            return new Response<GetUser>(HttpStatusCode.NotFound, "not found");
+        var getUser = new GetUser()
+        {
+            Id = user.Id,
+            Email = user.Email,
+            Username = user.Username,
+        };
+        return new Response<GetUser>(getUser);
     }
 
-    public Task<Response<List<GetUser>>> GetAllUsersAsync()
+    #endregion
+
+    #region GetAllUsers
+
+    public async Task<PaginationResponse<List<GetUser>>> GetAllUsersAsync(UserFilter filter)
     {
-        throw new NotImplementedException();
+        var users = await _repository.GetFilterUser(filter);
+        
+        if(users == null)
+            return new PaginationResponse<List<GetUser>>(HttpStatusCode.NotFound, "not found");
+
+        var totalRecords = users.Count;
+
+        var getUsers = users.Select(x => new GetUser()
+        {
+            Id = x.Id,
+            Email = x.Email,
+            Username = x.Username,
+        }).ToList();
+        
+        return new PaginationResponse<List<GetUser>>(filter.PageNumber, filter.PageSize, totalRecords, getUsers);
     }
+
+    #endregion
 
     public Task<Response<string>> UpdateUserAsync(int id, UpdatedUser user)
     {
