@@ -11,5 +11,4 @@ public class CreatedUser
     public required string Password { get; set; }
     [Required]
     public required string Email { get; set; }
-    public Roles Role { get; set; } = Roles.Customer;
 }

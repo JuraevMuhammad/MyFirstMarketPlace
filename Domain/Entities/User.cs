@@ -11,7 +11,7 @@ public class User : BaseEntity
     public required string HashPassword { get; set; }
     [Required]
     public required string Email { get; set; }
-    public Roles Role { get; set; }
+    public Roles Role { get; set; } = Roles.Customer;
     
     public Finance? Finance { get; set; }
     public List<Product>? Products { get; set; }

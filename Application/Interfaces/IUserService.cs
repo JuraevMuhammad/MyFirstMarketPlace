@@ -1,6 +1,13 @@
-﻿namespace Application.Interfaces;
+﻿using Application.DTOs.User;
+using Application.Responses;
+using Domain.Entities;
 
-public class IUserService
+namespace Application.Interfaces;
+
+public interface IUserService
 {
-    
+    Task<Response<GetUser>> GetUserByIdAsync(int userId);
+    Task<Response<GetUser>> GetMe();
+    Task<Response<List<GetUser>>> GetAllUsersAsync();
+    Task<Response<string>> UpdateUserAsync(int id, UpdatedUser user);
 }
