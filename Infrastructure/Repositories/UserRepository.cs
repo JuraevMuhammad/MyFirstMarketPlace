@@ -11,7 +11,7 @@ public class UserRepository : IUserRepository
     private readonly ApplicationDbContext _context;
     private readonly IRedisCache _cache;
 
-    public UserRepository(ApplicationDbContext context, RedisCache cache)
+    public UserRepository(ApplicationDbContext context, IRedisCache cache)
     {
         _context = context;
         _cache = cache;
@@ -81,12 +81,15 @@ public class UserRepository : IUserRepository
         return result;
     }
 
-    public async Task<int> SaveAsync()
+    public async Task<int> SaveAsync(string? username)
     {
         const string key = "users:all";
-         var res = await _context.SaveChangesAsync();
-         if (res > 0)
-             await _cache.RemoveDataAsync(key);
-         return res;
+        var user = await _context.Users.FirstOrDefaultAsync(x => x.Username == username && !x.IsDeleted);
+        if (user != null)
+            return 0;
+        var res = await _context.SaveChangesAsync(); 
+        if (res > 0) 
+            await _cache.RemoveDataAsync(key);
+        return res;
     }
 }

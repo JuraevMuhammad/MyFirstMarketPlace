@@ -12,12 +12,20 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+//Authorization
 builder.Services.AddRegisterSwaggerGen();
+builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddDbContext<ApplicationDbContext>(op =>
     op.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnectionString")));
 
+builder.Services.AddDistributedMemoryCache();
+//AddScoped
 builder.Services.AddRegistrationServices();
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration = builder.Configuration["Redis:ConnectionString"];
+});
 
 builder.Services.AddJwtRegister(builder.Configuration);
 builder.Services.AddAuthorization();
@@ -45,4 +53,4 @@ using (var scope = app.Services.CreateScope())
 }
 
 app.MapControllers();
-app.Run("http://localhost:5090");
+app.Run();

@@ -14,7 +14,7 @@ public class UserService : IUserService
     private readonly IHttpContextAccessor _accessor;
     private readonly IUserRepository _repository;
 
-    public UserService(HttpContextAccessor accessor,
+    public UserService(IHttpContextAccessor accessor,
         IUserRepository repository)
     {
         _accessor = accessor;
@@ -86,8 +86,23 @@ public class UserService : IUserService
 
     #endregion
 
-    public Task<Response<string>> UpdateUserAsync(int id, UpdatedUser user)
+    #region UpdateUser
+
+    public async Task<Response<string>> UpdateUserAsync(int id, UpdatedUser user)
     {
-        throw new NotImplementedException();
+        var dbUser = await _repository.GetUserByIdAsync(id);
+
+        if (dbUser == null)
+            return new Response<string>(HttpStatusCode.NotFound, "not found");
+
+        dbUser.Username = user.Username ?? dbUser.Username;
+        dbUser.Email = user.Email ?? dbUser.Email;
+
+        var result = await _repository.SaveAsync(user.Username ?? "");
+        return result == 0
+            ? new Response<string>(HttpStatusCode.BadRequest, "filed update user")
+            : new Response<string>(HttpStatusCode.OK, "update user");
     }
+
+    #endregion
 }
