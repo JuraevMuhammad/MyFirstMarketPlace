@@ -18,5 +18,7 @@ public static class RegisterServices
         services.AddScoped<IRedisCache, RedisCache>();
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<ICategoryRepository, CategoryRepository>();
+        services.AddScoped<ICategoryService, CategoryService>();
     }
 }
