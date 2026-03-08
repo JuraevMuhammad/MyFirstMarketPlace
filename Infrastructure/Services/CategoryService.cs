@@ -44,11 +44,12 @@ public class CategoryService : ICategoryService
             return new Response<string>(HttpStatusCode.NotFound, "not found");
         
         res.Name = category.Name ?? res.Name;
+        res.UpdatedAt = DateTime.UtcNow;
         
-        var result = await _repository.SaveAsync(res.Name);
+        var result = await _repository.UpdateSaveAsync(res);
         
         if (result <= 0) 
-            return new Response<string>(HttpStatusCode.NotModified, "not modified");
+            return new Response<string>(HttpStatusCode.BadRequest, "updated failed");
         
         _logger.LogInformation($"Category {res.Name} saved successfully");
         return new Response<string>(HttpStatusCode.OK, $"update category name -> {res.Name}");
@@ -64,7 +65,7 @@ public class CategoryService : ICategoryService
         var getCategory = categories.Select(x => new GetCategory()
         {
             Id = x.Id,
-            Name = x.Name
+            Name = x.Name,
         }).ToList();
         _logger.LogInformation($"type: <Category> -> <GetCategories>");
         return new Response<List<GetCategory>>(getCategory);
@@ -72,14 +73,10 @@ public class CategoryService : ICategoryService
 
     public async Task<Response<string>> DeleteCategory(int id)
     {
-        var category = await _repository.GetCategoryAsync(id);
-        if (category == null)
+        var category = await _repository.DeleteSaveAsync(id);
+        if (category <= 0)
             return new Response<string>(HttpStatusCode.NotFound, "not found");
-        category.IsDeleted = true;
         _logger.LogInformation($"IsDeleted: false -> true");
-        var res = await _repository.SaveAsync("");
-        return res > 0
-            ? new Response<string>(HttpStatusCode.OK, "is deleted success")
-            : new Response<string>(HttpStatusCode.BadRequest, "not deleted");
+        return new Response<string>(HttpStatusCode.OK, "is deleted success");
     }
 }

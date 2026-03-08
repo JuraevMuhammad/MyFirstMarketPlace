@@ -93,7 +93,7 @@ public class UserRepository : IUserRepository
         return result;
     }
 
-    public async Task<int> SaveAsync(string? username)
+    public async Task<int> SaveAsync(string username)
     {
         const string key = "users:all";
         var user = await _context.Users.FirstOrDefaultAsync(x => x.Username == username && !x.IsDeleted);
@@ -103,5 +103,14 @@ public class UserRepository : IUserRepository
         if (res > 0) 
             await _cache.RemoveDataAsync(key);
         return res;
+    }
+
+    public async Task<int> SaveAsync()
+    {
+        const string key = "users:all";
+        var result = await _context.SaveChangesAsync();
+        if (result > 0)
+            await _cache.RemoveDataAsync(key);
+        return result;
     }
 }

@@ -70,17 +70,28 @@ public class CategoryRepository : ICategoryRepository
         return category;
     }
 
-    public async Task<int> SaveAsync(string? name)
+    public async Task<int> DeleteSaveAsync(int id)
     {
-        var category = await _context.Categories.FirstOrDefaultAsync(x => x.Name == name && !x.IsDeleted);
-        if (category != null)
+        var category = await _context.Categories.FirstOrDefaultAsync(x => x.Id == id && !x.IsDeleted);
+        if (category == null)
         {
             _logger.LogCritical("Category already exists");
             return 0;
         }
 
+        category.IsDeleted = true;
+        
         _logger.LogInformation("Saving category and remove cache");
         await _cache.RemoveDataAsync(Key);
         return await _context.SaveChangesAsync();
+    }
+
+    public async Task<int> UpdateSaveAsync(Category category)
+    {
+        _context.Categories.Update(category);
+        var result = await _context.SaveChangesAsync();
+        if (result > 0)
+            await _cache.RemoveDataAsync(Key);
+        return result;
     }
 }
