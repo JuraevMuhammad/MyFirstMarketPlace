@@ -8,7 +8,7 @@ public class ItemProduct : BaseEntity
     public SizeProduct Size { get; set; }
     public Color Color { get; set; }
     public int Quantity { get; set; }
-    public required List<string> Fhoto { get; set; }
+    public required List<string> FileImage { get; set; }
     
     public Product? Product { get; set; }
 }
