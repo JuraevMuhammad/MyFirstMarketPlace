@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Domain.Entities;
 
 namespace Application.DTOs.Product;
 
@@ -13,4 +14,6 @@ public class CreatedProduct
     public required string Description { get; set; }
     [Required]
     public required decimal Price { get; set; }
+    
+    public List<CreatedProduct>? ItemProducts { get; set; }
 }
