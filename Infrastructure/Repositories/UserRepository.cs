@@ -17,6 +17,18 @@ public class UserRepository : IUserRepository
         _cache = cache;
     }
 
+    public async Task<int> CreateUserAsync(User user)
+    {
+        const string key = "users:all";
+        
+        _context.Users.Add(user);
+        var result = await _context.SaveChangesAsync();
+        
+        await _cache.RemoveDataAsync(key);
+        
+        return user.Id;
+    }
+
     public async Task<List<User>?> GetFilterUser(UserFilter filter)
     {
         var users = _context.Users

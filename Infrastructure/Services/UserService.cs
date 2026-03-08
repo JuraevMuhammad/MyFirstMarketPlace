@@ -4,6 +4,9 @@ using Application.DTOs.User;
 using Application.Filter;
 using Application.Interfaces;
 using Application.Responses;
+using Domain.Entities;
+using Domain.Enums;
+using Infrastructure.Hashing;
 using Infrastructure.Repositories;
 using Microsoft.AspNetCore.Http;
 
@@ -13,12 +16,15 @@ public class UserService : IUserService
 {
     private readonly IHttpContextAccessor _accessor;
     private readonly IUserRepository _repository;
+    private readonly IHashPassword _hash;
 
     public UserService(IHttpContextAccessor accessor,
-        IUserRepository repository)
+        IUserRepository repository,
+        IHashPassword hash)
     {
         _accessor = accessor;
         _repository = repository;
+        _hash = hash;
     }
 
     #region GetUserById
@@ -102,6 +108,30 @@ public class UserService : IUserService
         return result == 0
             ? new Response<string>(HttpStatusCode.BadRequest, "filed update user")
             : new Response<string>(HttpStatusCode.OK, "update user");
+    }
+
+
+    #endregion
+
+    #region CreateUser
+
+    public async Task<Response<string>> CreateUser(CreatedUser dto)
+    {
+        var users = await _repository.GetAllUsersAsync();
+        var user = users!.FirstOrDefault(x => x.Username == dto.Username && !x.IsDeleted);
+        if (user != null)
+            return new Response<string>(HttpStatusCode.BadRequest, "rename your username");
+
+        var createdUser = new User()
+        {
+            Username = dto.Username,
+            Email = dto.Email,
+            HashPassword = _hash.Generate(dto.Password),
+            Role = Roles.User
+        };
+
+        var result = await _repository.CreateUserAsync(createdUser);
+        return new Response<string>(HttpStatusCode.Created, $"Created User Id:{result} \nuser password: {dto.Password}");
     }
 
     #endregion
