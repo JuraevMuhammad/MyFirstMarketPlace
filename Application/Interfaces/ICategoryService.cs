@@ -9,5 +9,5 @@ public interface ICategoryService
     Task<Response<string>>  CreateCategory(CreatedCategory category);
     Task<Response<string>>  UpdateCategory(int id, UpdatedCategory category);
     Task<Response<List<GetCategory>>> GetAllCategories();
-    Response<string> DeleteCategory(int id);
+    Task<Response<string>> DeleteCategory(int id);
 }

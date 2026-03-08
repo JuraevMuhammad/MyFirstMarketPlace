@@ -25,7 +25,7 @@ public class CategoryRepository : ICategoryRepository
     public async Task<int> CreateCategoryAsync(Category category)
     {
         var result = _context.Categories
-            .FirstOrDefault(x => x.Name == category.Name);
+            .FirstOrDefault(x => x.Name == category.Name && !x.IsDeleted);
         if (result != null)
             return 0;
         await _context.Categories.AddAsync(category);
@@ -43,7 +43,10 @@ public class CategoryRepository : ICategoryRepository
             return cacheCategory;
         }
 
-        var categories = await _context.Categories.ToListAsync();
+        var categories = await _context.Categories
+            .Where(x => !x.IsDeleted)
+            .ToListAsync();
+        
         _logger.LogInformation("Getting categories from database");
         await _cache.SetDataAsync(Key, categories);
         _logger.LogInformation("Save categories to cache");
@@ -69,7 +72,7 @@ public class CategoryRepository : ICategoryRepository
 
     public async Task<int> SaveAsync(string? name)
     {
-        var category = await _context.Categories.FirstOrDefaultAsync(x => x.Name == name);
+        var category = await _context.Categories.FirstOrDefaultAsync(x => x.Name == name && !x.IsDeleted);
         if (category != null)
         {
             _logger.LogCritical("Category already exists");

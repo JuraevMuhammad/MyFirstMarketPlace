@@ -35,18 +35,51 @@ public class CategoryService : ICategoryService
 
     #endregion
 
-    public Task<Response<string>> UpdateCategory(int id, UpdatedCategory category)
+    #region UpdateCategory
+
+    public async Task<Response<string>> UpdateCategory(int id, UpdatedCategory category)
     {
-        throw new NotImplementedException();
+        var res = await _repository.GetCategoryAsync(id);
+        if (res == null)
+            return new Response<string>(HttpStatusCode.NotFound, "not found");
+        
+        res.Name = category.Name ?? res.Name;
+        
+        var result = await _repository.SaveAsync(res.Name);
+        
+        if (result <= 0) 
+            return new Response<string>(HttpStatusCode.NotModified, "not modified");
+        
+        _logger.LogInformation($"Category {res.Name} saved successfully");
+        return new Response<string>(HttpStatusCode.OK, res.Name);
     }
 
-    public Task<Response<List<GetCategory>>> GetAllCategories()
+    #endregion
+
+    public async Task<Response<List<GetCategory>>> GetAllCategories()
     {
-        throw new NotImplementedException();
+        var categories = await _repository.GetCategoriesAsync();
+        if (categories == null)
+            return new Response<List<GetCategory>>(HttpStatusCode.NotFound, "not found");
+        var getCategory = categories.Select(x => new GetCategory()
+        {
+            Id = x.Id,
+            Name = x.Name
+        }).ToList();
+        _logger.LogInformation($"type: <Category> -> <GetCategories>");
+        return new Response<List<GetCategory>>(getCategory);
     }
 
-    public Response<string> DeleteCategory(int id)
+    public async Task<Response<string>> DeleteCategory(int id)
     {
-        throw new NotImplementedException();
+        var category = await _repository.GetCategoryAsync(id);
+        if (category == null)
+            return new Response<string>(HttpStatusCode.NotFound, "not found");
+        category.IsDeleted = true;
+        _logger.LogInformation($"IsDeleted: false -> true");
+        var res = await _repository.SaveAsync("");
+        return res > 0
+            ? new Response<string>(HttpStatusCode.OK, "is deleted success")
+            : new Response<string>(HttpStatusCode.BadRequest, "not deleted");
     }
 }
