@@ -51,7 +51,7 @@ public class CategoryService : ICategoryService
             return new Response<string>(HttpStatusCode.NotModified, "not modified");
         
         _logger.LogInformation($"Category {res.Name} saved successfully");
-        return new Response<string>(HttpStatusCode.OK, res.Name);
+        return new Response<string>(HttpStatusCode.OK, $"update category name -> {res.Name}");
     }
 
     #endregion

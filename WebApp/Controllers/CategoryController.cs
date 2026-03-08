@@ -37,6 +37,7 @@ public class CategoryController(ICategoryService service) : ControllerBase
     }
 
     [Authorize(Roles = nameof(Roles.Admin))]
+    [HttpDelete]
     public async Task<IActionResult> DeleteCategory(int id)
     {
         var res = await service.DeleteCategory(id);
