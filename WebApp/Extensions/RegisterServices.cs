@@ -3,6 +3,7 @@ using Infrastructure.Hashing;
 using Infrastructure.Jwt;
 using Infrastructure.Redis;
 using Infrastructure.Repositories;
+using Infrastructure.SaveFile;
 using Infrastructure.Services;
 using StackExchange.Redis;
 
@@ -20,5 +21,10 @@ public static class RegisterServices
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<ICategoryRepository, CategoryRepository>();
         services.AddScoped<ICategoryService, CategoryService>();
+        services.AddScoped<IFileStorage, FileStorage>();
+        services.AddScoped<IProductRepository, ProductRepository>();
+        services.AddScoped<IItemProductRepository,  ItemProductRepository>();
+        services.AddScoped<IProductService, ProductService>();
+        services.AddScoped<IItemProductService, ItemProductService>();
     }
 }

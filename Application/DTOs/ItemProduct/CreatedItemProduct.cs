@@ -8,9 +8,6 @@ public class CreatedItemProduct
 {
     public int ProductId { get; set; }
     public SizeProduct? Size { get; set; }
-    public Color? Color { get; set; }
+    public ColorProduct? Color { get; set; }
     public int Quantity { get; set; }
-    [Required]
-    public required List<IFormFile> FileImage { get; set; }
-
 }

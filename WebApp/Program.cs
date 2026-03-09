@@ -51,6 +51,7 @@ using (var scope = app.Services.CreateScope())
     await context.Database.MigrateAsync();
     await SeedAdmin.Initialize(scope.ServiceProvider);
 }
-
+// open file from chrome
+app.UseStaticFiles();
 app.MapControllers();
 app.Run();

@@ -6,7 +6,7 @@ namespace Domain.Entities;
 public class Order : BaseEntity
 {
     public required SizeProduct SizeProduct { get; set; }
-    public required Color Color { get; set; }
+    public required ColorProduct ColorProduct { get; set; }
     [Required]
     [Phone]
     public required string PhoneNumber { get; set; }
