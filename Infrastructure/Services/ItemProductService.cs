@@ -32,4 +32,38 @@ public class ItemProductService : IItemProductService
             ? new Response<string>(HttpStatusCode.Created, "ItemProduct created successfully")
             : new Response<string>(HttpStatusCode. BadRequest, "ItemProduct not created successfully");
     }
+
+    #region UpdateItemProduct
+
+    public async Task<Response<string>> UpdateItemProduct(int id, UpdateItemProduct dto)
+    {
+        var product = await _repository.GetItemProduct(id);
+        if (product == null)
+            return new Response<string>(HttpStatusCode.NotFound, "ItemProduct not found");
+        product.Size = dto.Size ?? product.Size;
+        product.ColorProduct = dto.Color ?? product.ColorProduct;
+        product.Quantity = dto.Quantity ?? product.Quantity;
+        var result = await _repository.UpdateItemProduct(product);
+        return result > 0
+            ? new Response<string>(HttpStatusCode.Accepted, "ItemProduct updated successfully")
+            : new Response<string>(HttpStatusCode.BadRequest, "ItemProduct not updated successfully");
+    }
+
+    #endregion
+
+    #region DeleteItemProduct
+
+    public async Task<Response<string>> DeleteItemProduct(int id)
+    {
+        var product = await _repository.GetItemProduct(id);
+        if (product == null)
+            return new Response<string>(HttpStatusCode.NotFound, "not found");
+        product.IsDeleted = true;
+        var result = await _repository.UpdateItemProduct(product);
+        return result > 0
+            ? new Response<string>(HttpStatusCode.NoContent, "ItemProduct deleted successfully")
+            : new Response<string>(HttpStatusCode.BadRequest, "ItemProduct not deleted successfully");
+    }
+
+    #endregion
 }

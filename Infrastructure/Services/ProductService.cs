@@ -39,6 +39,7 @@ public class ProductService : IProductService
             Name = x.Name,
             Description = x.Description,
             Price = x.Price,
+            Images = x.FileImage,
             ItemProducts = (x.ItemProducts ?? []).Select(ip => new GetItemProduct()
             {
                 Size = ip.Size,
@@ -125,6 +126,7 @@ public class ProductService : IProductService
             Name = product.Name,
             Price = product.Price,
             UserId = product.UserId,
+            Images = product.FileImage
         };
         return new Response<GetProduct>(getProduct);
     }
