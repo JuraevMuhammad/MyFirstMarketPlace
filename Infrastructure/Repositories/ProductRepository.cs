@@ -42,7 +42,7 @@ public class ProductRepository : IProductRepository
 
     public async Task<List<Product>?> GetFilterProducts(ProductFilter filter)
     {
-        var products = _context.Products.AsQueryable();
+        var products = _context.Products.Include(x => x.ItemProducts).AsQueryable();
         
         if(!string.IsNullOrEmpty(filter.Name))
             products = products.Where(x => x.Name.Contains(filter.Name));

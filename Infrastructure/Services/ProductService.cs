@@ -39,6 +39,12 @@ public class ProductService : IProductService
             Name = x.Name,
             Description = x.Description,
             Price = x.Price,
+            ItemProducts = (x.ItemProducts ?? []).Select(ip => new GetItemProduct()
+            {
+                Size = ip.Size,
+                Color = ip.ColorProduct,
+                Quantity = ip.Quantity
+            }).ToList()
         }).ToList();
         
         var totalRecord = getProduct.Count;
