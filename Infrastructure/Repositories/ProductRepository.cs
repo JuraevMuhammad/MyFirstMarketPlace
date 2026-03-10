@@ -2,6 +2,8 @@
 using Domain.Entities;
 using Infrastructure.Data;
 using Infrastructure.Redis;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace Infrastructure.Repositories;
 
@@ -9,10 +11,13 @@ public class ProductRepository : IProductRepository
 {
     private readonly IRedisCache _cache;
     private readonly ApplicationDbContext _context;
+    private readonly ILogger<ProductRepository> _logger;
     private const string Key = "product:list";
 
-    public ProductRepository(IRedisCache cache, ApplicationDbContext context)
+    public ProductRepository(IRedisCache cache, ApplicationDbContext context,
+        ILogger<ProductRepository> logger)
     {
+        _logger = logger;
         _cache = cache;
         _context = context;
     }
@@ -35,13 +40,42 @@ public class ProductRepository : IProductRepository
         return result;
     }
 
-    public async Task<List<Product>> GetFilterProducts(ProductFilter filter)
+    public async Task<List<Product>?> GetFilterProducts(ProductFilter filter)
     {
-        throw new NotImplementedException();
+        var products = _context.Products.AsQueryable();
+        
+        if(!string.IsNullOrEmpty(filter.Name))
+            products = products.Where(x => x.Name.Contains(filter.Name));
+        if(filter.MaxPrice.HasValue)
+            products = products.Where(x => x.Price <= filter.MaxPrice.Value);
+        if(filter.MinPrice.HasValue)
+            products = products.Where(x => x.Price >= filter.MinPrice.Value);
+        if(filter.CategoryId.HasValue)
+            products = products.Where(x => x.CategoryId == filter.CategoryId.Value);
+        
+        return await products
+            .Where(x => !x.IsDeleted)
+            .Skip((filter.PageNumber - 1) * filter.PageSize)
+            .Take(filter.PageSize).ToListAsync();
     }
 
-    public async Task<Product> GetProductById(int id)
+    public async Task<Product?> GetProductById(int id)
     {
-        throw new NotImplementedException();
+        var key = $"product:{id}";
+        var cacheProduct = await _cache.GetDataAsync<Product>(key);
+        if(cacheProduct != null)
+        {
+            _logger.LogInformation($"get product from redis cache");
+            return cacheProduct;
+        }
+        _logger.LogInformation($"get product from database");
+        var product = await _context.Products.FirstOrDefaultAsync(x => x.Id == id &&  !x.IsDeleted);
+        
+        if (product == null) 
+            return product;
+        
+        _logger.LogInformation($"Product with id {id} was found and save to redis cache");
+        await _cache.SetDataAsync(key, product);
+        return product;
     }
 }

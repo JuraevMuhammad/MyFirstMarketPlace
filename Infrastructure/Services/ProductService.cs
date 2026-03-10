@@ -23,10 +23,30 @@ public class ProductService : IProductService
         _file = file;
     }
 
-    public Task<PaginationResponse<List<GetProduct>>> GetFilterProduct(ProductFilter filter)
+    #region GetPaginationProduct
+
+    public async Task<PaginationResponse<List<GetProduct>>> GetFilterProduct(ProductFilter filter)
     {
-        throw new NotImplementedException();
+        var products = await _repository.GetFilterProducts(filter);
+        
+        if(products == null)
+            return new PaginationResponse<List<GetProduct>>(HttpStatusCode.NotFound, "not found");
+        
+        var getProduct = products.Select(x => new GetProduct()
+        {
+            CategoryId = x.CategoryId,
+            UserId = x.UserId,
+            Name = x.Name,
+            Description = x.Description,
+            Price = x.Price,
+        }).ToList();
+        
+        var totalRecord = getProduct.Count;
+        
+        return new PaginationResponse<List<GetProduct>>(filter.PageNumber,  filter.PageSize, totalRecord, getProduct);
     }
+
+    #endregion
 
     #region CreateProduct
 
@@ -48,18 +68,60 @@ public class ProductService : IProductService
 
     #endregion
 
-    public Task<Response<string>> UpdateProduct(int id, UpdatedProduct dto)
+    #region UpdateProduct
+
+    public async Task<Response<string>> UpdateProduct(int id, UpdatedProduct dto)
     {
-        throw new NotImplementedException();
+        var res = await _repository.GetProductById(id);
+        if(res == null)
+            return new Response<string>(HttpStatusCode.NotFound, "not found");
+        res.Name = dto.Name ?? res.Name;
+        res.Description = dto.Description ?? res.Description;
+        res.Price = dto.Price ?? res.Price;
+        res.CategoryId = dto.CategoryId ?? res.CategoryId;
+        var result = await _repository.UpdateProduct(res);
+        return result > 0
+            ? new Response<string>(HttpStatusCode.OK, "updated product")
+            : new Response<string>(HttpStatusCode.BadRequest, "updated product failed");
     }
 
-    public Task<Response<string>> DeleteProduct(int id)
+    #endregion
+
+    #region DeleteProdcut
+
+    public async Task<Response<string>> DeleteProduct(int id)
     {
-        throw new NotImplementedException();
+        var product = await _repository.GetProductById(id);
+        if(product == null)
+            return new Response<string>(HttpStatusCode.NotFound, "not found");
+        product.IsDeleted = true;
+        var result = await _repository.UpdateProduct(product);
+        return result > 0 
+            ? new Response<string>(HttpStatusCode.NoContent, "deleted product")
+            : new Response<string>(HttpStatusCode.BadRequest, "deleted product failed");
     }
 
-    public Task<Response<GetProduct>> GetProductById(int id)
+    #endregion
+
+    #region GetProductById
+
+    public async Task<Response<GetProduct>> GetProductById(int id)
     {
-        throw new NotImplementedException();
+        var product = await _repository.GetProductById(id);
+        
+        if(product == null)
+            return new Response<GetProduct>(HttpStatusCode.NotFound, "not found");
+
+        var getProduct = new GetProduct()
+        {
+            CategoryId = product.CategoryId,
+            Description = product.Description,
+            Name = product.Name,
+            Price = product.Price,
+            UserId = product.UserId,
+        };
+        return new Response<GetProduct>(getProduct);
     }
+
+    #endregion
 }
