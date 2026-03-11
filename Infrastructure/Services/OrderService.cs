@@ -44,6 +44,7 @@ public class OrderService : IOrderService
 
         var getOrders = orders.Select(x => new GetOrder()
         {
+            Id = x.Id,
             SizeProduct = x.SizeProduct,
             ColorProduct = x.ColorProduct,
             Name = x.Name,
@@ -66,6 +67,7 @@ public class OrderService : IOrderService
 
         var getOrder = new GetOrder()
         {
+            Id = order.Id,
             SizeProduct = order.SizeProduct,
             ColorProduct = order.ColorProduct,
             Name = order.Name,

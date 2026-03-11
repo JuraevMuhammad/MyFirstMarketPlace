@@ -34,6 +34,7 @@ public class ProductService : IProductService
         
         var getProduct = products.Select(x => new GetProduct()
         {
+            Id = x.Id,
             CategoryId = x.CategoryId,
             UserId = x.UserId,
             Name = x.Name,
@@ -121,6 +122,7 @@ public class ProductService : IProductService
 
         var getProduct = new GetProduct()
         {
+            Id = product.Id,
             CategoryId = product.CategoryId,
             Description = product.Description,
             Name = product.Name,

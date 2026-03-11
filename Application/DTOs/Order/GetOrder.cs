@@ -4,6 +4,7 @@ namespace Application.DTOs.Order;
 
 public class GetOrder
 {
+    public int Id { get; set; }
     public SizeProduct SizeProduct { get; set; }
     public ColorProduct ColorProduct { get; set; }
     public string PhoneNumber { get; set; } = string.Empty;
