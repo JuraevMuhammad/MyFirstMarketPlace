@@ -10,7 +10,6 @@ public class OrderRepository : IOrderRepository
     private readonly ApplicationDbContext _context;
     private readonly IRedisCache _cache;
     private const string Key = "order:list";
-    private int _cnt = 0;
 
     public OrderRepository(ApplicationDbContext context, IRedisCache cache)
     {
@@ -52,13 +51,33 @@ public class OrderRepository : IOrderRepository
 
     }
 
-    public Task<Order> GetOrder(int orderId)
+    public async Task<Order?> GetOrder(int orderId)
     {
-        throw new NotImplementedException();
+        var key = $"order:{orderId}";
+        var cacheOrder = await _cache.GetDataAsync<Order>(key);
+        if (cacheOrder != null)
+            return cacheOrder;
+        var order = await _context.Orders.FirstOrDefaultAsync(x => x.Id == orderId);
+        await _cache.SetDataAsync(key, order);
+        return order;
     }
 
-    public Task<List<Order>> GetOrders()
+    public async Task<List<Order>?> GetOrders()
     {
-        throw new NotImplementedException();
+        var cacheOrders = await _cache.GetDataAsync<List<Order>?>(Key);
+        if (cacheOrders != null)
+            return cacheOrders;
+        var orders = await _context.Orders.ToListAsync();
+        await _cache.SetDataAsync(Key, orders);
+        return orders;
+    }
+
+    public async Task<int> UpdateOrder(Order order)
+    {
+        _context.Orders.Update(order);
+        var result = await _context.SaveChangesAsync();
+        if (result > 0)
+            await _cache.RemoveDataAsync(Key);
+        return result;
     }
 }

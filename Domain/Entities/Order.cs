@@ -13,6 +13,7 @@ public class Order : BaseEntity
     [Required]
     public required string Name { get; set; }
     public decimal Sum { get; set; }
+    public OrderStatus Status { get; set; }
     
     public int UserId { get; set; }
     public User? User { get; set; }
