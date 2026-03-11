@@ -3,6 +3,7 @@ using Application.DTOs.User;
 using Application.Interfaces;
 using Application.Responses;
 using Domain.Entities;
+using Domain.Enums;
 using Infrastructure.Data;
 using Infrastructure.Hashing;
 using Infrastructure.Jwt;
@@ -37,9 +38,26 @@ public class AuthorizeService : IAuthorize
             Email = dto.Email
         };
         
-        _context.Users.Add(created);
-        await _context.SaveChangesAsync();
-        return new Response<string>(HttpStatusCode.Created, "created new user");
+        
+        await _context.Users.AddAsync(created);
+        
+        var orders = await _context.Orders
+            .Where(x => x.UserId == created.Id).ToListAsync();
+
+        var finance = new Finance()
+        {
+            UserId = created.Id,
+            CompletedOrders = 0,
+            TotalOrders = 0,
+            CancelledOrders = 0,
+            NewOrders = 0,
+            TotalRevenue = 0,
+        };
+        await _context.Finances.AddAsync(finance);
+        var result = await _context.SaveChangesAsync();
+        return result > 0 
+            ? new Response<string>(HttpStatusCode.Created, "created new user")
+            : new  Response<string>(HttpStatusCode.BadRequest, "not created");
     }
 
     public async Task<Response<string>> LoginUser(LoginUser dto)

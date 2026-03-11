@@ -10,6 +10,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<Product> Products { get; set; }
     public DbSet<ItemProduct> ItemProducts { get; set; }
     public DbSet<Finance> Finances { get; set; }
+    public DbSet<ItemFinance> ItemFinances { get; set; }
     public DbSet<Category> Categories { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -42,5 +43,10 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             .HasOne(x => x.Finance)
             .WithOne(x => x.User)
             .HasForeignKey<Finance>(x => x.UserId);
+        
+        modelBuilder.Entity<Finance>()
+            .HasMany(x => x.Items)
+            .WithOne(x => x.Finance)
+            .HasForeignKey(x => x.FinanceId);
     }
 }

@@ -1,9 +1,8 @@
-﻿using Domain.Enums;
+﻿namespace Application.DTOs.Finance;
 
-namespace Domain.Entities;
-
-public class Finance : BaseEntity
+public class GetFinance
 {
+    public int Id { get; set; }
     public int CompletedOrders { get; set; }
     public int TotalOrders { get; set; }
     public int NewOrders { get; set; }
@@ -14,8 +13,4 @@ public class Finance : BaseEntity
     
     public DateTime? Start { get; set; }
     public DateTime? Finish { get; set; }
-    
-    public List<ItemFinance>? Items { get; set; }
-    public User? User { get; set; }
-    public int UserId { get; set; }
 }

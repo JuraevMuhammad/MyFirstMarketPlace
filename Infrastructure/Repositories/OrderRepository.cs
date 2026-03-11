@@ -2,6 +2,7 @@
 using Infrastructure.Data;
 using Infrastructure.Redis;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Conventions;
 
 namespace Infrastructure.Repositories;
 
@@ -21,7 +22,8 @@ public class OrderRepository : IOrderRepository
     {
         await using var transaction = await _context.Database.BeginTransactionAsync();
         
-        var product = await _context.Products.Include(x => x.ItemProducts)
+        var product = await _context.Products
+            .Include(x => x.ItemProducts)
             .FirstOrDefaultAsync(x => x.Id == order.ProductId);
         if (product == null)
             return 0;
@@ -30,7 +32,7 @@ public class OrderRepository : IOrderRepository
             .AnyAsync(x => x.Id == order.UserId);
         if (!customer)
             return 0;
-
+        
         var res = product.ItemProducts?.FirstOrDefault(item =>
             item.ColorProduct == order.ColorProduct && item.Size == order.SizeProduct);
         if (res == null || res.Quantity <= 0)
@@ -43,12 +45,24 @@ public class OrderRepository : IOrderRepository
         await _context.Orders.AddAsync(order);
         var result = await _context.SaveChangesAsync();
         
+        if (result <= 0) 
+            return result;
+        
+        var finance = await _context.Finances
+            .FirstOrDefaultAsync(x => x.UserId == product.UserId);
+        if (finance == null)
+            return 0;
+        finance.NewOrders += 1;
+        finance.TotalOrders += 1;
+        finance.TotalRevenue += product.Price;
+        
+        await _context.SaveChangesAsync();
+        
         await transaction.CommitAsync();
         
-        if (result > 0)
-            await _cache.RemoveDataAsync(Key);
+        await _cache.RemoveDataAsync(Key);
+        
         return result;
-
     }
 
     public async Task<Order?> GetOrder(int orderId)
