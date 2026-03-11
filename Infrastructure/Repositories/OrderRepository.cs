@@ -20,6 +20,8 @@ public class OrderRepository : IOrderRepository
     
     public async Task<int> CreateOrder(Order order)
     {
+        await using var transaction = await _context.Database.BeginTransactionAsync();
+        
         var product = await _context.Products.Include(x => x.ItemProducts)
             .FirstOrDefaultAsync(x => x.Id == order.ProductId);
         if (product == null)
@@ -41,6 +43,9 @@ public class OrderRepository : IOrderRepository
         
         await _context.Orders.AddAsync(order);
         var result = await _context.SaveChangesAsync();
+        
+        await transaction.CommitAsync();
+        
         if (result > 0)
             await _cache.RemoveDataAsync(Key);
         return result;
