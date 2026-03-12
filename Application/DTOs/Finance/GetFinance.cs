@@ -1,4 +1,6 @@
-﻿namespace Application.DTOs.Finance;
+﻿using Application.DTOs.ItemFinance;
+
+namespace Application.DTOs.Finance;
 
 public class GetFinance
 {
@@ -13,4 +15,6 @@ public class GetFinance
     
     public DateTime? Start { get; set; }
     public DateTime? Finish { get; set; }
+    
+    public List<GetItemFinance>? Items { get; set; }
 }

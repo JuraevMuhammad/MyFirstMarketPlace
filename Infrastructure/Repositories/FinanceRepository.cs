@@ -1,4 +1,5 @@
-﻿using Domain.Entities;
+﻿using Application.DTOs.ItemFinance;
+using Domain.Entities;
 using Domain.Enums;
 using Infrastructure.Data;
 using Infrastructure.Redis;
@@ -38,5 +39,26 @@ public class FinanceRepository : IFinanceRepository
         if (finance != null)
             await _cache.SetDataAsync(key, finance);
         return finance;
+    }
+
+    public async Task<int> CreateItemFinance(ItemFinance dto, Finance finance)
+    {
+        await _context.AddAsync(dto);
+        
+        var res = await _context.SaveChangesAsync();
+        if (res <= 0)
+            return 0;
+        
+        _context.Finances.Update(finance);
+        var result = await _context.SaveChangesAsync();
+        if (result > 0)
+            await _cache.RemoveDataAsync(Key);
+        return result;
+    }
+
+    public async Task<List<ItemFinance>?> GetItemFinances(int id)
+    {
+        var itemFinance = await _context.ItemFinances.Where(x => x.FinanceId == id).ToListAsync();
+        return itemFinance.Count == 0 ? null : itemFinance;
     }
 }

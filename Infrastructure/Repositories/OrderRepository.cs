@@ -1,4 +1,5 @@
 ﻿using Domain.Entities;
+using Domain.Enums;
 using Infrastructure.Data;
 using Infrastructure.Redis;
 using Microsoft.EntityFrameworkCore;
@@ -49,7 +50,7 @@ public class OrderRepository : IOrderRepository
             return result;
         
         var finance = await _context.Finances
-            .FirstOrDefaultAsync(x => x.UserId == product.UserId);
+            .FirstOrDefaultAsync(x => x.UserId == order.UserId);
         if (finance == null)
             return 0;
         finance.NewOrders += 1;
@@ -88,6 +89,19 @@ public class OrderRepository : IOrderRepository
 
     public async Task<int> UpdateOrder(Order order)
     {
+        var finance = await _context.Finances
+            .FirstOrDefaultAsync(x => x.UserId == order.UserId);
+
+        switch (order.Status)
+        {
+            case OrderStatus.Completed when finance != null:
+                finance.CompletedOrders += 1;
+                break;
+            case OrderStatus.Canceled when finance != null:
+                finance.CancelledOrders += 1;
+                break;
+        }
+
         _context.Orders.Update(order);
         var result = await _context.SaveChangesAsync();
         if (result > 0)

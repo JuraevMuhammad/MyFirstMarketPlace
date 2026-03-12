@@ -28,5 +28,7 @@ public static class RegisterServices
         services.AddScoped<IItemProductService, ItemProductService>();
         services.AddScoped<IOrderRepository, OrderRepository>();
         services.AddScoped<IOrderService, OrderService>();
+        services.AddScoped<IFinanceRepository, FinanceRepository>();
+        services.AddScoped<IFinanceService, FinanceService>();
     }
 }
