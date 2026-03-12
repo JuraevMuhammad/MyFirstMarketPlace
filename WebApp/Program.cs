@@ -3,6 +3,7 @@ using Hangfire;
 using Hangfire.PostgreSql;
 using Infrastructure.BackgroundTask;
 using Infrastructure.Data;
+using Infrastructure.Email;
 using Infrastructure.Jwt;
 using Infrastructure.Seed;
 using Infrastructure.Services;
@@ -12,6 +13,7 @@ using WebApp.Extensions;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.Configure<JwtOption>(builder.Configuration.GetSection(nameof(JwtOption)));
+builder.Services.Configure<EmailOptions>(builder.Configuration.GetSection(nameof(EmailOptions)));
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -69,9 +71,14 @@ using (var scope = app.Services.CreateScope())
     var recurringJobManager = serviceProvider.GetRequiredService<IRecurringJobManager>();
 
     recurringJobManager.AddOrUpdate<LowStockTelegramService>(
-        "delete-categories",
+        "send-message-telegram",
         service => service.SendMessage(),
-        "0 0 1 * *");
+        "0 0 * * *");
+    
+    recurringJobManager.AddOrUpdate<RemoveCategories>(
+        "delete-categories",
+        service => service.RemoveRange(),
+        "20 0 * * *");
 }
 // open file from chrome
 app.UseHangfireDashboard();

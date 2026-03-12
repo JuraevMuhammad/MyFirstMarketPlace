@@ -1,4 +1,5 @@
 ﻿using Application.Interfaces;
+using Infrastructure.Email;
 using Infrastructure.Hashing;
 using Infrastructure.Jwt;
 using Infrastructure.Redis;
@@ -31,5 +32,6 @@ public static class RegisterServices
         services.AddScoped<IFinanceRepository, FinanceRepository>();
         services.AddScoped<IFinanceService, FinanceService>();
         services.AddHttpClient<ITelegramService, TelegramService>();
+        services.AddScoped<ISendMail, SendMail>();
     }
 }
