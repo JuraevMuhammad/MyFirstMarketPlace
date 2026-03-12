@@ -1,6 +1,8 @@
+using Application.Interfaces;
 using Infrastructure.Data;
 using Infrastructure.Jwt;
 using Infrastructure.Seed;
+using Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 using WebApp.Extensions;
 
@@ -22,6 +24,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(op =>
 builder.Services.AddDistributedMemoryCache();
 //AddScoped
 builder.Services.AddRegistrationServices();
+builder.Services.AddHttpClient<ITelegramService, TelegramService>();
 builder.Services.AddStackExchangeRedisCache(options =>
 {
     options.Configuration = builder.Configuration["Redis:ConnectionString"];

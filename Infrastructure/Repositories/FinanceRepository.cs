@@ -31,13 +31,13 @@ public class FinanceRepository : IFinanceRepository
         return finances;
     }
 
-    public async Task<Finance?> GetById(int userId)
+    public async Task<Finance?> GetById(int id)
     {
-        var key = $"finance:{userId}";
+        var key = $"finance:{id}";
         var cacheFinance = await _cache.GetDataAsync<Finance>(key);
         if(cacheFinance != null)
             return cacheFinance;
-        var finance = await _context.Finances.FirstOrDefaultAsync(x => x.UserId == userId);
+        var finance = await _context.Finances.FirstOrDefaultAsync(x => x.UserId == id);
         if (finance != null)
             await _cache.SetDataAsync(key, finance);
         return finance;

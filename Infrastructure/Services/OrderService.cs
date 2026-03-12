@@ -11,9 +11,11 @@ namespace Infrastructure.Services;
 public class OrderService : IOrderService
 {
     private readonly IOrderRepository _repository;
+    private readonly ITelegramService _telegram;
 
-    public OrderService(IOrderRepository repository)
+    public OrderService(IOrderRepository repository, ITelegramService telegram)
     {
+        _telegram = telegram;
         _repository = repository;
     }
     
@@ -30,9 +32,23 @@ public class OrderService : IOrderService
             Status = OrderStatus.Created,
         };
         var result = await _repository.CreateOrder(create);
-        return result > 0
-            ? new Response<string>(HttpStatusCode.Created, "created order successfully")
-            : new Response<string>(HttpStatusCode.BadRequest, "failed to create order");
+        if(result <= 0)
+            return new Response<string>(HttpStatusCode.BadRequest, "failed to create order");
+
+        var telegramMessage = $"""
+                               пришёл заказ №{create.Id}
+                               Customer Name: {create.Name}
+                               Customer Phone Number: {create.PhoneNumber}
+                               
+                               ProductId: {create.ProductId}
+                               ColorProduct: {create.ColorProduct}
+                               SizeProduct: {create.SizeProduct}
+                               
+                               Price: {create.Sum}
+                               """;
+        
+        await _telegram.SendMessage(telegramMessage);
+        return new Response<string>(HttpStatusCode.Created, "created order successfully");
     }
 
     public async Task<Response<List<GetOrder>>> GetOrders()

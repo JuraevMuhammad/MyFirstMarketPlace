@@ -56,6 +56,8 @@ public class OrderRepository : IOrderRepository
         finance.NewOrders += 1;
         finance.TotalOrders += 1;
         finance.TotalRevenue += product.Price;
+
+        await _cache.RemoveDataAsync($"finance:{finance.UserId}");
         
         await _context.SaveChangesAsync();
         

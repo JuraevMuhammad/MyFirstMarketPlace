@@ -107,9 +107,11 @@ public class FinanceService : IFinanceService
         {
             case FinanceStatus.Expense:
                 finance.Expenses += create.Amount;
+                finance.TotalRevenue -= create.Amount;
                 break;
             case FinanceStatus.Income:
                 finance.Income += create.Amount;
+                finance.TotalRevenue += create.Amount;
                 break;
         }
 
