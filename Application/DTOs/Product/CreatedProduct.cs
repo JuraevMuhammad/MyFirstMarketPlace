@@ -8,7 +8,6 @@ namespace Application.DTOs.Product;
 public class CreatedProduct
 {
     public int CategoryId { get; set; }
-    public int UserId { get; set; }
     [Required]
     public required string Name { get; set; }
     [Required]

@@ -3,6 +3,7 @@ using Domain.Entities;
 using Domain.Enums;
 using Infrastructure.Data;
 using Infrastructure.Redis;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Repositories;
@@ -12,7 +13,8 @@ public class FinanceRepository : IFinanceRepository
     private readonly ApplicationDbContext _context;
     private readonly IRedisCache _cache;
     private const string Key = "finance:list";    
-    public FinanceRepository(ApplicationDbContext context, IRedisCache cache)
+    public FinanceRepository(ApplicationDbContext context, 
+        IRedisCache cache)
     {
         _cache = cache;
         _context = context;
@@ -29,13 +31,13 @@ public class FinanceRepository : IFinanceRepository
         return finances;
     }
 
-    public async Task<Finance?> GetById(int id)
+    public async Task<Finance?> GetById(int userId)
     {
-        var key = $"finance:{id}";
+        var key = $"finance:{userId}";
         var cacheFinance = await _cache.GetDataAsync<Finance>(key);
         if(cacheFinance != null)
             return cacheFinance;
-        var finance = await _context.Finances.FirstOrDefaultAsync(x => x.Id == id);
+        var finance = await _context.Finances.FirstOrDefaultAsync(x => x.UserId == userId);
         if (finance != null)
             await _cache.SetDataAsync(key, finance);
         return finance;

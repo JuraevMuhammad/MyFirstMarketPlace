@@ -1,5 +1,6 @@
 ﻿using System.Drawing;
 using System.Net;
+using System.Security.Claims;
 using Application.DTOs.ItemProduct;
 using Application.DTOs.Product;
 using Application.Filter;
@@ -9,18 +10,21 @@ using Domain.Entities;
 using Domain.Enums;
 using Infrastructure.Repositories;
 using Infrastructure.SaveFile;
+using Microsoft.AspNetCore.Http;
 
 namespace Infrastructure.Services;
 
 public class ProductService : IProductService
 {
+    private readonly IHttpContextAccessor _accessor;
     private readonly IProductRepository _repository;
     private readonly IFileStorage _file;
 
-    public ProductService(IProductRepository repository, IFileStorage file)
+    public ProductService(IProductRepository repository, IFileStorage file, IHttpContextAccessor accessor)
     {
         _repository = repository;
         _file = file;
+        _accessor = accessor;
     }
 
     #region GetPaginationProduct
@@ -60,10 +64,15 @@ public class ProductService : IProductService
 
     public async Task<Response<string>> CreateProduct(CreatedProduct dto)
     {
+        var userId = _accessor.HttpContext?.User.FindFirstValue("userId");
+        
+        if(!int.TryParse(userId, out var id))
+            return new Response<string>(HttpStatusCode.Unauthorized, "invalid token");
+        
         var product = new Product()
         {
             CategoryId = dto.CategoryId,
-            UserId = dto.UserId,
+            UserId = id,
             Name = dto.Name,
             Description = dto.Description,
             Price = dto.Price,
@@ -71,7 +80,9 @@ public class ProductService : IProductService
         };
 
         var result =await _repository.CreateProduct(product);
-        return new Response<string>(HttpStatusCode.Created, "created product");
+        return result > 0
+            ? new Response<string>(HttpStatusCode.Created, "created product")
+            : new Response<string>(HttpStatusCode.BadRequest, "product creation failed");
     }
 
     #endregion

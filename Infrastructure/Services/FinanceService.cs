@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using System.Security.Claims;
 using Application.DTOs.Finance;
 using Application.DTOs.ItemFinance;
 using Application.Interfaces;
@@ -6,24 +7,33 @@ using Application.Responses;
 using Domain.Entities;
 using Domain.Enums;
 using Infrastructure.Repositories;
+using Microsoft.AspNetCore.Http;
 
 namespace Infrastructure.Services;
 
 public class FinanceService : IFinanceService
 {
     private readonly IFinanceRepository _repository;
+    private readonly IHttpContextAccessor _accessor;
 
-    public FinanceService(IFinanceRepository repository)
+    public FinanceService(IFinanceRepository repository, IHttpContextAccessor accessor)
     {
         _repository = repository;
+        _accessor = accessor;
     }
 
-    public async Task<Response<GetFinance>> GetFinance(int id)
+    #region GetMyFinance
+
+    public async Task<Response<GetFinance>> GetFinance()
     {
+        var userId = _accessor.HttpContext?.User.FindFirstValue("userId");
+        if(!int.TryParse(userId, out var id))
+            return new Response<GetFinance>(HttpStatusCode.Unauthorized, "invalid token");
+        
         var finance = await _repository.GetById(id);
         var itemFinance = await _repository.GetItemFinances(id);
         
-        if(itemFinance == null || finance == null)
+        if(finance == null)
             return new Response<GetFinance>(HttpStatusCode.NotFound, "not found");
 
         var getFinance = new GetFinance()
@@ -36,7 +46,7 @@ public class FinanceService : IFinanceService
             CancelledOrders = finance.CancelledOrders,
             Expenses = finance.Expenses,
             Income = finance.Income,
-            Items = itemFinance.Select(x => new GetItemFinance()
+            Items = itemFinance?.Select(x => new GetItemFinance()
             {
                 Amount = x.Amount,
                 Status = x.Status,
@@ -45,6 +55,10 @@ public class FinanceService : IFinanceService
         };
         return new Response<GetFinance>(getFinance);
     }
+
+    #endregion
+
+    #region GetAllFinance
 
     public async Task<Response<List<GetFinance>>> GetAllFinances()
     {
@@ -67,6 +81,10 @@ public class FinanceService : IFinanceService
         
         return new Response<List<GetFinance>>(getFinances);
     }
+
+    #endregion
+
+    #region CreateItemFinance
 
     public async Task<Response<string>> CreateItemFinance(CreateItemFinance dto)
     {
@@ -100,4 +118,6 @@ public class FinanceService : IFinanceService
             ? new Response<string>(HttpStatusCode.Created, "created item finance")
             : new Response<string>(HttpStatusCode.BadRequest, "error");
     }
+
+    #endregion
 }

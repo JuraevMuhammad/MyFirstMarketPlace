@@ -11,10 +11,10 @@ namespace WebApp.Controllers;
 public class FinanceController(IFinanceService service) : ControllerBase
 {
     [Authorize(Roles = nameof(Roles.Admin) + "," + nameof(Roles.User))]
-    [HttpGet]
-    public async Task<IActionResult> GetById(int id)
+    [HttpGet ("id")]
+    public async Task<IActionResult> GetById()
     {
-        var res = await service.GetFinance(id);
+        var res = await service.GetFinance();
         return StatusCode(res.StatusCode, res);
     }
 
@@ -28,7 +28,7 @@ public class FinanceController(IFinanceService service) : ControllerBase
 
     [Authorize(Roles = nameof(Roles.User))]
     [HttpPost]
-    public async Task<IActionResult> CreateItemFinance(CreateItemFinance dto)
+    public async Task<IActionResult> CreateItemFinance([FromQuery]CreateItemFinance dto)
     {
         var res = await service.CreateItemFinance(dto);
         return StatusCode(res.StatusCode, res);

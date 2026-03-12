@@ -6,7 +6,7 @@ namespace Application.Interfaces;
 
 public interface IFinanceService
 {
-    Task<Response<GetFinance>> GetFinance(int id);
+    Task<Response<GetFinance>> GetFinance();
     Task<Response<List<GetFinance>>> GetAllFinances();
     Task<Response<string>> CreateItemFinance(CreateItemFinance dto);
 }

@@ -96,9 +96,11 @@ public class OrderRepository : IOrderRepository
         {
             case OrderStatus.Completed when finance != null:
                 finance.CompletedOrders += 1;
+                finance.NewOrders -= 1;
                 break;
             case OrderStatus.Canceled when finance != null:
                 finance.CancelledOrders += 1;
+                finance.NewOrders -= 1;
                 break;
         }
 
