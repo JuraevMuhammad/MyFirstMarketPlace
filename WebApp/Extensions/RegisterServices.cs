@@ -30,5 +30,6 @@ public static class RegisterServices
         services.AddScoped<IOrderService, OrderService>();
         services.AddScoped<IFinanceRepository, FinanceRepository>();
         services.AddScoped<IFinanceService, FinanceService>();
+        services.AddHttpClient<ITelegramService, TelegramService>();
     }
 }
