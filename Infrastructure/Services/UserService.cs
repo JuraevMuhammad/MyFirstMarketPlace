@@ -107,7 +107,7 @@ public class UserService : IUserService
             return new Response<string>(HttpStatusCode.NotFound, "not found");
 
         dbUser.Username = user.Username ?? dbUser.Username;
-        dbUser.Email = user.Email;
+        dbUser.Email = user.Email ?? dbUser.Email;
         dbUser.UpdatedAt =  DateTime.UtcNow;
 
         var result = await _repository.UpdateAsync(dbUser);

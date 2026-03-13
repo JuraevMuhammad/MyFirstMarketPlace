@@ -29,11 +29,6 @@ public class OrderRepository : IOrderRepository
         if (product == null)
             return 0;
         
-        var customer = await _context.Users
-            .AnyAsync(x => x.Id == order.UserId);
-        if (!customer)
-            return 0;
-        
         var res = product.ItemProducts?.FirstOrDefault(item =>
             item.ColorProduct == order.ColorProduct && item.Size == order.SizeProduct);
         if (res == null || res.Quantity <= 0)
@@ -50,7 +45,7 @@ public class OrderRepository : IOrderRepository
             return result;
         
         var finance = await _context.Finances
-            .FirstOrDefaultAsync(x => x.UserId == order.UserId);
+            .FirstOrDefaultAsync(x => order.Product != null && x.UserId == order.Product.UserId);
         if (finance == null)
             return 0;
         finance.NewOrders += 1;
@@ -92,7 +87,7 @@ public class OrderRepository : IOrderRepository
     public async Task<int> UpdateOrder(Order order)
     {
         var finance = await _context.Finances
-            .FirstOrDefaultAsync(x => x.UserId == order.UserId);
+            .FirstOrDefaultAsync(x => x.UserId == order.Product!.UserId);
 
         switch (order.Status)
         {

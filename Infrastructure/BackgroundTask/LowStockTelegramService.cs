@@ -31,7 +31,7 @@ public class LowStockTelegramService
             })
             .ToListAsync();
 
-        if (!items.Any())
+        if (items.Count == 0)
             return;
 
         var message = "⚠️ Low Stock Products\n\n" +
