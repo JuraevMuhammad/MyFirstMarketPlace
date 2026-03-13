@@ -94,20 +94,26 @@ public class UserService : IUserService
 
     #region UpdateUser
 
-    public async Task<Response<string>> UpdateUserAsync(int id, UpdatedUser user)
+    public async Task<Response<string>> UpdateUserAsync(UpdatedUser user)
     {
+        var userId = _accessor.HttpContext?.User.FindFirstValue("userId");
+        
+        if(!int.TryParse(userId, out var id))
+            return new Response<string>(HttpStatusCode.Unauthorized, "invalid token");
+        
         var dbUser = await _repository.GetUserByIdAsync(id);
 
         if (dbUser == null)
             return new Response<string>(HttpStatusCode.NotFound, "not found");
 
         dbUser.Username = user.Username ?? dbUser.Username;
-        dbUser.Email = user.Email ?? dbUser.Email;
+        dbUser.Email = user.Email;
+        dbUser.UpdatedAt =  DateTime.UtcNow;
 
-        var result = await _repository.SaveAsync(user.Username ?? "");
-        return result == 0
-            ? new Response<string>(HttpStatusCode.BadRequest, "filed update user")
-            : new Response<string>(HttpStatusCode.OK, "update user");
+        var result = await _repository.UpdateAsync(dbUser);
+        return result >= 0
+            ? new Response<string>(HttpStatusCode.OK, "update user")
+            : new Response<string>(HttpStatusCode.BadRequest, "filed update user");
     }
 
 

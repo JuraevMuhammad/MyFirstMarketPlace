@@ -1,4 +1,5 @@
-﻿using Application.Filter;
+﻿using System.Data;
+using Application.Filter;
 using Domain.Entities;
 using Infrastructure.Data;
 using Infrastructure.Redis;
@@ -93,24 +94,13 @@ public class UserRepository : IUserRepository
         return result;
     }
 
-    public async Task<int> SaveAsync(string username)
+    public async Task<int> UpdateAsync(User update)
     {
-        const string key = "users:all";
-        var user = await _context.Users.FirstOrDefaultAsync(x => x.Username == username && !x.IsDeleted);
-        if (user != null)
-            return 0;
+        string key = $"user:{update.Id}";
+        _context.Users.Update(update);
         var res = await _context.SaveChangesAsync(); 
         if (res > 0) 
             await _cache.RemoveDataAsync(key);
         return res;
-    }
-
-    public async Task<int> SaveAsync()
-    {
-        const string key = "users:all";
-        var result = await _context.SaveChangesAsync();
-        if (result > 0)
-            await _cache.RemoveDataAsync(key);
-        return result;
     }
 }

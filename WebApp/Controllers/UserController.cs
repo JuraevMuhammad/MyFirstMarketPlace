@@ -35,9 +35,9 @@ public class UserController(IUserService service) : ControllerBase
     }
 
     [HttpPut]
-    public async Task<IActionResult> UpdateUser(int id, UpdatedUser user)
+    public async Task<IActionResult> UpdateUser([FromQuery]UpdatedUser user)
     {
-        var res = await service.UpdateUserAsync(id, user);
+        var res = await service.UpdateUserAsync(user);
         return StatusCode(res.StatusCode, res);
     }
 

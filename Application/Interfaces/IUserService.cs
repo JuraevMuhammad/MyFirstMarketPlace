@@ -10,6 +10,6 @@ public interface IUserService
     Task<Response<GetUser>> GetUserByIdAsync(int userId);
     Task<Response<GetUser>> GetMe();
     Task<PaginationResponse<List<GetUser>>> GetAllUsersAsync(UserFilter filter);
-    Task<Response<string>> UpdateUserAsync(int id, UpdatedUser user);
+    Task<Response<string>> UpdateUserAsync(UpdatedUser user);
     Task<Response<string>> CreateUser(CreatedUser dto);
 }

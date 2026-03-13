@@ -79,6 +79,11 @@ using (var scope = app.Services.CreateScope())
         "delete-categories",
         service => service.RemoveRange(),
         "20 0 * * *");
+    
+    recurringJobManager.AddOrUpdate<SendFinanceService>(
+        "send-finance",
+        service => service.SendMail(),
+        "0 0 1 * *");
 }
 // open file from chrome
 app.UseHangfireDashboard();

@@ -10,7 +10,6 @@ public interface IUserRepository
     Task<List<User>?> GetAllUsersAsync();
     Task<List<User>?> GetFilterUser(UserFilter filter);
     Task<int> DeleteUserAsync(int userId);
-    Task<int> SaveAsync(string username);
-    Task<int> SaveAsync();
+    Task<int> UpdateAsync(User update);
     Task<int> CreateUserAsync(User user);
 }
