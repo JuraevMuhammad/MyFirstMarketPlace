@@ -1,4 +1,5 @@
 ﻿using Application.DTOs.ItemFinance;
+using Application.Filter;
 using Domain.Entities;
 using Domain.Enums;
 using Infrastructure.Data;
@@ -62,5 +63,13 @@ public class FinanceRepository : IFinanceRepository
     {
         var itemFinance = await _context.ItemFinances.Where(x => x.FinanceId == id).ToListAsync();
         return itemFinance.Count == 0 ? null : itemFinance;
+    }
+
+    public async Task<Finance?> GetFinanceFilter(FinanceFilter filter)
+    {
+        var finance = _context.Finances.AsQueryable();
+        
+        if(filter.Start != null)
+            finance = finance.Where(x => x.CreatedAt)
     }
 }

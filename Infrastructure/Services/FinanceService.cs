@@ -2,6 +2,7 @@
 using System.Security.Claims;
 using Application.DTOs.Finance;
 using Application.DTOs.ItemFinance;
+using Application.Filter;
 using Application.Interfaces;
 using Application.Responses;
 using Domain.Entities;
@@ -122,4 +123,9 @@ public class FinanceService : IFinanceService
     }
 
     #endregion
+
+    public Task<Response<string>> GetFinanceFilter(FinanceFilter filter)
+    {
+        throw new NotImplementedException();
+    }
 }

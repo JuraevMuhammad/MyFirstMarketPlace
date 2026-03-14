@@ -64,11 +64,11 @@ public class AuthorizeService : IAuthorize
     {
         var res = await _context.Users.FirstOrDefaultAsync(x => x.Username == dto.Username);
         if (res == null)
-            return new Response<string>(HttpStatusCode.NotFound, "not found");
+            return new Response<string>(HttpStatusCode.NotFound, "invalid your password or username");
 
         var password = _hash.Verify(dto.Password, res.HashPassword);
         if (!password)
-            return new Response<string>(HttpStatusCode.BadRequest, "invalid password");
+            return new Response<string>(HttpStatusCode.BadRequest, "invalid your password or username");
 
         var token = _jwt.GenerateToken(res);
         return new Response<string>(HttpStatusCode.OK, token);
