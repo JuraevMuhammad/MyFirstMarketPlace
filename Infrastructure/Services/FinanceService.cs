@@ -124,8 +124,23 @@ public class FinanceService : IFinanceService
 
     #endregion
 
-    public Task<Response<string>> GetFinanceFilter(FinanceFilter filter)
+    public async Task<PaginationResponse<List<GetItemFinance>>> GetItemFinanceFilter(FinanceFilter filter)
     {
-        throw new NotImplementedException();
+        var itemFinances = await _repository.GetFinanceFilter(filter);
+        
+        if(itemFinances == null || itemFinances.Count == 0)
+            return new PaginationResponse<List<GetItemFinance>>(HttpStatusCode.NotFound, "not found");
+
+        var getItemFinance = itemFinances.Select(x => new GetItemFinance()
+        {
+            Id = x.Id,
+            Amount = x.Amount,
+            Status = x.Status,
+            CreatedAt = x.CreatedAt
+        }).ToList();
+
+        var totalRecord = getItemFinance.Count;
+
+        return new PaginationResponse<List<GetItemFinance>>(filter.PageNumber, filter.PageSize, totalRecord, getItemFinance);
     }
 }

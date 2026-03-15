@@ -65,11 +65,19 @@ public class FinanceRepository : IFinanceRepository
         return itemFinance.Count == 0 ? null : itemFinance;
     }
 
-    public async Task<Finance?> GetFinanceFilter(FinanceFilter filter)
+    public async Task<List<ItemFinance>?> GetFinanceFilter(FinanceFilter filter)
     {
-        var finance = _context.Finances.AsQueryable();
-        
-        if(filter.Start != null)
-            finance = finance.Where(x => x.CreatedAt)
+        var finance = _context.ItemFinances.AsQueryable();
+
+        if (filter.Start != null)
+            finance = finance.Where(x => x.CreatedAt >= filter.Start);
+        if (filter.Finish != null) 
+            finance = finance.Where(x => x.CreatedAt <= filter.Finish);
+
+        return await finance
+            .Where(x => !x.IsDeleted)
+            .Skip((filter.PageNumber - 1) * filter.PageSize)
+            .Take(filter.PageSize)
+            .ToListAsync();
     }
 }

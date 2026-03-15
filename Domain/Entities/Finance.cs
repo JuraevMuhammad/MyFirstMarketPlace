@@ -12,9 +12,6 @@ public class Finance : BaseEntity
     public decimal Expenses { get; set; }
     public decimal Income { get; set; }
     
-    public DateTime? Start { get; set; }
-    public DateTime? Finish { get; set; }
-    
     public List<ItemFinance>? Items { get; set; }
     public User? User { get; set; }
     public int UserId { get; set; }

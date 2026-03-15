@@ -1,4 +1,5 @@
 ﻿using Application.DTOs.ItemFinance;
+using Application.Filter;
 using Application.Interfaces;
 using Domain.Enums;
 using Microsoft.AspNetCore.Authorization;
@@ -31,6 +32,14 @@ public class FinanceController(IFinanceService service) : ControllerBase
     public async Task<IActionResult> CreateItemFinance([FromQuery]CreateItemFinance dto)
     {
         var res = await service.CreateItemFinance(dto);
+        return StatusCode(res.StatusCode, res);
+    }
+
+    [Authorize(Roles = nameof(Roles.User))]
+    [HttpGet("filter")]
+    public async Task<IActionResult> GetItemFinance([FromQuery] FinanceFilter filter)
+    {
+        var res = await service.GetItemFinanceFilter(filter);
         return StatusCode(res.StatusCode, res);
     }
 }
