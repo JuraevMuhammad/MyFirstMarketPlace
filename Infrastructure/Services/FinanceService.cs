@@ -89,17 +89,22 @@ public class FinanceService : IFinanceService
 
     public async Task<Response<string>> CreateItemFinance(CreateItemFinance dto)
     {
+        var id = _accessor.HttpContext?.User.FindFirstValue("userId");
+        
+        if(!int.TryParse(id, out var userId))
+            return new Response<string>(HttpStatusCode.Unauthorized, "invalid token");
+        
         if (dto.Amount <= 0)
             return new Response<string>(HttpStatusCode.BadRequest, "amount must be greater than 0");
         
-        var finance = await _repository.GetById(dto.FinanceId);
+        var finance = await _repository.GetById(userId);
         
         if (finance == null)
             return new Response<string>(HttpStatusCode.NotFound, "not found");
         
         var create = new ItemFinance()
         {
-            FinanceId = dto.FinanceId,
+            FinanceId = finance.Id,
             Amount = dto.Amount,
             Status = dto.Status,
         };

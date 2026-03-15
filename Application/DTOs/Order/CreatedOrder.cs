@@ -12,7 +12,5 @@ public class CreatedOrder
     public required string PhoneNumber { get; set; }
     [Required]
     public required string Name { get; set; }
-    
-    public int UserId { get; set; }
     public int ProductId { get; set; }
 }

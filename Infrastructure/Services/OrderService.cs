@@ -1,33 +1,44 @@
 ﻿using System.Net;
+using System.Security.Claims;
 using Application.DTOs.Order;
 using Application.Interfaces;
 using Application.Responses;
 using Domain.Entities;
 using Domain.Enums;
 using Infrastructure.Repositories;
+using Microsoft.AspNetCore.Http;
 
 namespace Infrastructure.Services;
 
 public class OrderService : IOrderService
 {
+    private readonly IHttpContextAccessor _accessor;
     private readonly IOrderRepository _repository;
     private readonly ITelegramService _telegram;
 
-    public OrderService(IOrderRepository repository, ITelegramService telegram)
+    public OrderService(IOrderRepository repository,
+        ITelegramService telegram,
+        IHttpContextAccessor accessor)
     {
         _telegram = telegram;
         _repository = repository;
+        _accessor = accessor;
     }
     
     public async Task<Response<string>> CreateOrder(CreatedOrder order)
     {
+        var id = _accessor.HttpContext?.User.FindFirstValue("userId");
+        
+        if(!int.TryParse(id, out var userId))
+            return new Response<string>(HttpStatusCode.Unauthorized, "invalid token");
+        
         var create = new Order()
         {
             SizeProduct = order.SizeProduct,
             ColorProduct = order.ColorProduct,
             Name = order.Name,
             ProductId = order.ProductId,
-            UserId = order.UserId,
+            UserId = userId,
             PhoneNumber = order.PhoneNumber,
             Status = OrderStatus.Created,
         };
