@@ -11,6 +11,14 @@ namespace WebApp.Controllers;
 [Route("api/finance")]
 public class FinanceController(IFinanceService service) : ControllerBase
 {
+    [Authorize(Roles = nameof(Roles.User))]
+    [HttpGet ("expense-and-income")]
+    public async Task<IActionResult> ExpenseAndIncome( [FromQuery]FinanceFilter filter)
+    {
+        var res = await service.GetExpenseAndIncome(filter);
+        return StatusCode(res.StatusCode, res);
+    }
+    
     [Authorize(Roles = nameof(Roles.Admin) + "," + nameof(Roles.User))]
     [HttpGet ("id")]
     public async Task<IActionResult> GetById()

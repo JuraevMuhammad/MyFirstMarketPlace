@@ -12,14 +12,19 @@ using Microsoft.AspNetCore.Http;
 
 namespace Infrastructure.Services;
 
+public record DailyFinancePoint(string Date, decimal Income, decimal Expenses);
 public class FinanceService : IFinanceService
 {
     private readonly IFinanceRepository _repository;
+    private readonly IOrderRepository _orderRepository;
     private readonly IHttpContextAccessor _accessor;
 
-    public FinanceService(IFinanceRepository repository, IHttpContextAccessor accessor)
+    public FinanceService(IFinanceRepository repository,
+        IHttpContextAccessor accessor,
+        IOrderRepository orderRepository)
     {
         _repository = repository;
+        _orderRepository = orderRepository;
         _accessor = accessor;
     }
 
@@ -147,5 +152,91 @@ public class FinanceService : IFinanceService
         var totalRecord = getItemFinance.Count;
 
         return new PaginationResponse<List<GetItemFinance>>(filter.PageNumber, filter.PageSize, totalRecord, getItemFinance);
+    }
+
+    public async Task<Response<string>> UpdateItemFinance(int id, UpdateItemFinance dto)
+    {
+        throw new  NotImplementedException();
+    }
+
+    public async Task<Response<List<ExpenseAndIncome>>> GetExpenseAndIncome(FinanceFilter filter)
+    {
+        var id = _accessor.HttpContext?.User.FindFirstValue("userId");
+        if (!int.TryParse(id, out var userId))
+            return new Response<List<ExpenseAndIncome>>(HttpStatusCode.Unauthorized, "invalid token");
+    
+        // логика дат
+        var from = (filter.Start ?? DateTime.UtcNow.AddDays(-7)).Date;
+        var to = (filter.Finish ?? DateTime.UtcNow).Date;
+    
+        if (from > to)
+            return new Response<List<ExpenseAndIncome>>(HttpStatusCode.BadRequest, "invalid date range");
+    
+        var finance = await _repository.GetById(userId);
+        if (finance == null)
+            return new Response<List<ExpenseAndIncome>>(HttpStatusCode.NotFound, "finance not found");
+    
+        var orders = await _orderRepository.GetOrders();
+        var expenses = await _repository.GetItemFinances(finance.Id);
+    
+        // INCOME FROM ORDERS 
+        var incomeFromOrders = orders
+            .Where(x => x.CreatedAt.Date >= from && x.CreatedAt.Date <= to && x.Status == OrderStatus.Completed)
+            .GroupBy(x => x.CreatedAt.Date)
+            .Select(x => new
+            {
+                Date = x.Key,
+                Total = x.Sum(s => s.Sum)
+            });
+    
+        // INCOME FROM FINANCE 
+        var incomeFromFinance = expenses
+            .Where(x => x.CreatedAt.Date >= from && x.CreatedAt.Date <= to && x.Status == FinanceStatus.Income)
+            .GroupBy(x => x.CreatedAt.Date)
+            .Select(x => new
+            {
+                Date = x.Key,
+                Total = x.Sum(s => s.Amount)
+            });
+    
+        // COMBINE INCOME
+        var income = incomeFromOrders
+            .Concat(incomeFromFinance)
+            .GroupBy(x => x.Date)
+            .Select(x => new
+            {
+                Date = x.Key,
+                Total = x.Sum(v => v.Total)
+            })
+            .ToDictionary(x => x.Date, x => x.Total);
+    
+        //  EXPENSE 
+        var expense = expenses
+            .Where(x => x.CreatedAt.Date >= from && x.CreatedAt.Date <= to && x.Status == FinanceStatus.Expense)
+            .GroupBy(x => x.CreatedAt.Date)
+            .Select(x => new
+            {
+                Date = x.Key,
+                Total = x.Sum(s => s.Amount)
+            })
+            .ToDictionary(x => x.Date, x => x.Total);
+    
+        //  BUILD RESULT
+        var result = new List<ExpenseAndIncome>();
+    
+        for (var day = from; day <= to; day = day.AddDays(1))
+        {
+            income.TryGetValue(day, out var incomeValue);
+            expense.TryGetValue(day, out var expenseValue);
+    
+            result.Add(new ExpenseAndIncome
+            {
+                Date = day.ToString("yyyy-MM-dd"),
+                Income = incomeValue,
+                Expense = expenseValue
+            });
+        }
+    
+        return new Response<List<ExpenseAndIncome>>(result);
     }
 }

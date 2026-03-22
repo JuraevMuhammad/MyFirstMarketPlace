@@ -22,7 +22,7 @@ public class OrderRepository : IOrderRepository
     public async Task<int> CreateOrder(Order order)
     {
         await using var transaction = await _context.Database.BeginTransactionAsync();
-        
+        //quantity - 1
         var product = await _context.Products
             .Include(x => x.ItemProducts)
             .FirstOrDefaultAsync(x => x.Id == order.ProductId);
@@ -37,20 +37,20 @@ public class OrderRepository : IOrderRepository
         res.Quantity -= 1;
         
         order.Sum = product.Price;
-        
+        //add order
         await _context.Orders.AddAsync(order);
         var result = await _context.SaveChangesAsync();
         
         if (result <= 0) 
             return result;
-        
+        //change finance (newOrder++, totalOrder++)
         var finance = await _context.Finances
             .FirstOrDefaultAsync(x => order.Product != null && x.UserId == order.Product.UserId);
         if (finance == null)
             return 0;
         finance.NewOrders += 1;
         finance.TotalOrders += 1;
-        finance.TotalRevenue += product.Price;
+        // finance.TotalRevenue += product.Price;
 
         await _cache.RemoveDataAsync($"finance:{finance.UserId}");
         
@@ -93,6 +93,8 @@ public class OrderRepository : IOrderRepository
         {
             case OrderStatus.Completed when finance != null:
                 finance.CompletedOrders += 1;
+                finance.TotalRevenue += order.Sum;
+                
                 finance.NewOrders -= 1;
                 break;
             case OrderStatus.Canceled when finance != null:

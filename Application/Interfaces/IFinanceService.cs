@@ -11,4 +11,6 @@ public interface IFinanceService
     Task<Response<List<GetFinance>>> GetAllFinances();
     Task<Response<string>> CreateItemFinance(CreateItemFinance dto);
     Task<PaginationResponse<List<GetItemFinance>>> GetItemFinanceFilter(FinanceFilter filter);
+    Task<Response<string>> UpdateItemFinance(int id, UpdateItemFinance dto);
+    Task<Response<List<ExpenseAndIncome>>> GetExpenseAndIncome(FinanceFilter filter);
 }
