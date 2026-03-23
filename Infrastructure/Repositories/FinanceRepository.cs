@@ -46,7 +46,7 @@ public class FinanceRepository : IFinanceRepository
 
     public async Task<int> CreateItemFinance(ItemFinance dto, Finance finance)
     {
-        await _context.AddAsync(dto);
+        _context.ItemFinances.Add(dto);
         
         var res = await _context.SaveChangesAsync();
         if (res <= 0)
@@ -55,7 +55,10 @@ public class FinanceRepository : IFinanceRepository
         _context.Finances.Update(finance);
         var result = await _context.SaveChangesAsync();
         if (result > 0)
+        {
+            await _cache.RemoveDataAsync($"finance:{dto.FinanceId}");
             await _cache.RemoveDataAsync(Key);
+        }
         return result;
     }
 

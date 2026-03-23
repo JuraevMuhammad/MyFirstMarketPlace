@@ -17,6 +17,4 @@ public class CreatedProduct
     public required decimal Price { get; set; }
     [Required]
     public required List<IFormFile> Images { get; set; }
-
-    public List<CreatedItemProduct>? ItemProducts { get; set; }
 }

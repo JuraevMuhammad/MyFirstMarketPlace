@@ -86,8 +86,14 @@ public class OrderRepository : IOrderRepository
 
     public async Task<int> UpdateOrder(Order order)
     {
+        var product = await _context.Products.Include(x => x.User)
+            .FirstOrDefaultAsync(x => x.Id == order.ProductId);
+
+        if (product == null)
+            return 0;
+        
         var finance = await _context.Finances
-            .FirstOrDefaultAsync(x => x.UserId == order.Product!.UserId);
+            .FirstOrDefaultAsync(x => x.UserId == product.UserId);
 
         switch (order.Status)
         {
@@ -102,11 +108,17 @@ public class OrderRepository : IOrderRepository
                 finance.NewOrders -= 1;
                 break;
         }
+        
+        Console.WriteLine("=========================================");
 
         _context.Orders.Update(order);
+        Console.WriteLine("=================Error========================");
         var result = await _context.SaveChangesAsync();
+        Console.WriteLine("=================SaveChange========================");
         if (result > 0)
+        {
             await _cache.RemoveDataAsync(Key);
+        }
         return result;
     }
 }

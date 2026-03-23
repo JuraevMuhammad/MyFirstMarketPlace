@@ -14,13 +14,16 @@ public class OrderService : IOrderService
 {
     private readonly IHttpContextAccessor _accessor;
     private readonly IOrderRepository _repository;
+    private readonly IUserRepository _userRepository;
     private readonly ITelegramService _telegram;
 
     public OrderService(IOrderRepository repository,
         ITelegramService telegram,
-        IHttpContextAccessor accessor)
+        IHttpContextAccessor accessor,
+        IUserRepository userRepository)
     {
         _telegram = telegram;
+        _userRepository = userRepository;
         _repository = repository;
         _accessor = accessor;
     }
@@ -31,12 +34,14 @@ public class OrderService : IOrderService
         
         if(!int.TryParse(id, out var userId))
             return new Response<string>(HttpStatusCode.Unauthorized, "invalid token");
+
+        var user = await _userRepository.GetUserByIdAsync(userId);
         
         var create = new Order()
         {
             SizeProduct = order.SizeProduct,
             ColorProduct = order.ColorProduct,
-            Name = order.Name,
+            Name = user!.Username,
             ProductId = order.ProductId,
             UserId = userId,
             PhoneNumber = order.PhoneNumber,

@@ -54,6 +54,7 @@ public class FinanceService : IFinanceService
             Income = finance.Income,
             Items = itemFinance?.Select(x => new GetItemFinance()
             {
+                Id = x.Id,
                 Amount = x.Amount,
                 Status = x.Status,
                 CreatedAt = x.CreatedAt
@@ -159,6 +160,8 @@ public class FinanceService : IFinanceService
         throw new  NotImplementedException();
     }
 
+    #region GetExpensesAndIncome
+
     public async Task<Response<List<ExpenseAndIncome>>> GetExpenseAndIncome(FinanceFilter filter)
     {
         var id = _accessor.HttpContext?.User.FindFirstValue("userId");
@@ -178,6 +181,9 @@ public class FinanceService : IFinanceService
     
         var orders = await _orderRepository.GetOrders();
         var expenses = await _repository.GetItemFinances(finance.Id);
+
+        if (orders == null || expenses == null)
+            return new Response<List<ExpenseAndIncome>>(HttpStatusCode.NotFound, "not found");
     
         // INCOME FROM ORDERS 
         var incomeFromOrders = orders
@@ -221,9 +227,9 @@ public class FinanceService : IFinanceService
             })
             .ToDictionary(x => x.Date, x => x.Total);
     
-        //  BUILD RESULT
+        // RESULT
         var result = new List<ExpenseAndIncome>();
-    
+        
         for (var day = from; day <= to; day = day.AddDays(1))
         {
             income.TryGetValue(day, out var incomeValue);
@@ -239,4 +245,6 @@ public class FinanceService : IFinanceService
     
         return new Response<List<ExpenseAndIncome>>(result);
     }
+
+    #endregion
 }
