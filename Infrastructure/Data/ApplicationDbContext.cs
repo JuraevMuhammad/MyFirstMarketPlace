@@ -45,6 +45,10 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             .HasForeignKey<Finance>(x => x.UserId);
         
         modelBuilder.Entity<Finance>()
+            .HasIndex(x => x.UserId)
+            .IsUnique();
+        
+        modelBuilder.Entity<Finance>()
             .HasMany(x => x.Items)
             .WithOne(x => x.Finance)
             .HasForeignKey(x => x.FinanceId);

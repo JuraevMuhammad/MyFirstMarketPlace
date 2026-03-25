@@ -39,11 +39,12 @@ public class SendMail : ISendMail
 
         using var mailMessage = new MailMessage(from, to);
         mailMessage.Subject = user.Email;
+        mailMessage.IsBodyHtml = true;
         mailMessage.Body = $"""
-                            Hallo {user.Username}
-                            Your LogIn: {user.Username}
-                            Your Password: {password}
-                            """;
+                             <h2>Hallo {user.Username}</h2>
+                             <p>Your account has been created.</p>
+                             <p><b>Login:</b> {user.Username}</p>
+                             """;
 
         using var smtp = new SmtpClient(_options.Host, _options.Port);
         smtp.EnableSsl = true;
