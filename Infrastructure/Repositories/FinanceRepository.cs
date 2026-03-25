@@ -23,24 +23,13 @@ public class FinanceRepository : IFinanceRepository
 
     public async Task<List<Finance>?> GetAll()
     {
-        var cacheFinances = await _cache.GetDataAsync<List<Finance>>(Key);
-        if(cacheFinances != null)
-            return cacheFinances;
         var finances = await _context.Finances.ToListAsync();
-        if (cacheFinances != null)
-            await _cache.SetDataAsync(Key, finances);
         return finances;
     }
 
     public async Task<Finance?> GetById(int id)
     {
-        var key = $"finance:{id}";
-        var cacheFinance = await _cache.GetDataAsync<Finance>(key);
-        if(cacheFinance != null)
-            return cacheFinance;
         var finance = await _context.Finances.FirstOrDefaultAsync(x => x.UserId == id);
-        if (finance != null)
-            await _cache.SetDataAsync(key, finance);
         return finance;
     }
 
@@ -54,11 +43,6 @@ public class FinanceRepository : IFinanceRepository
         
         _context.Finances.Update(finance);
         var result = await _context.SaveChangesAsync();
-        if (result > 0)
-        {
-            await _cache.RemoveDataAsync($"finance:{dto.FinanceId}");
-            await _cache.RemoveDataAsync(Key);
-        }
         return result;
     }
 

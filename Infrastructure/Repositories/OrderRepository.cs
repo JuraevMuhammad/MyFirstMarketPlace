@@ -10,13 +10,10 @@ namespace Infrastructure.Repositories;
 public class OrderRepository : IOrderRepository
 {
     private readonly ApplicationDbContext _context;
-    private readonly IRedisCache _cache;
-    private const string Key = "order:list";
 
-    public OrderRepository(ApplicationDbContext context, IRedisCache cache)
+    public OrderRepository(ApplicationDbContext context)
     {
         _context = context;
-        _cache = cache;
     }
     
     public async Task<int> CreateOrder(Order order)
@@ -51,36 +48,23 @@ public class OrderRepository : IOrderRepository
         finance.NewOrders += 1;
         finance.TotalOrders += 1;
         // finance.TotalRevenue += product.Price;
-
-        await _cache.RemoveDataAsync($"finance:{finance.UserId}");
         
         await _context.SaveChangesAsync();
         
         await transaction.CommitAsync();
-        
-        await _cache.RemoveDataAsync(Key);
         
         return result;
     }
 
     public async Task<Order?> GetOrder(int orderId)
     {
-        var key = $"order:{orderId}";
-        var cacheOrder = await _cache.GetDataAsync<Order>(key);
-        if (cacheOrder != null)
-            return cacheOrder;
         var order = await _context.Orders.FirstOrDefaultAsync(x => x.Id == orderId);
-        await _cache.SetDataAsync(key, order);
         return order;
     }
 
     public async Task<List<Order>?> GetOrders()
     {
-        var cacheOrders = await _cache.GetDataAsync<List<Order>?>(Key);
-        if (cacheOrders != null)
-            return cacheOrders;
         var orders = await _context.Orders.ToListAsync();
-        await _cache.SetDataAsync(Key, orders);
         return orders;
     }
 
@@ -109,16 +93,9 @@ public class OrderRepository : IOrderRepository
                 break;
         }
         
-        Console.WriteLine("=========================================");
-
         _context.Orders.Update(order);
-        Console.WriteLine("=================Error========================");
         var result = await _context.SaveChangesAsync();
-        Console.WriteLine("=================SaveChange========================");
-        if (result > 0)
-        {
-            await _cache.RemoveDataAsync(Key);
-        }
+        
         return result;
     }
 }
