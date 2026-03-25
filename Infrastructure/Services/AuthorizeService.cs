@@ -5,6 +5,7 @@ using Application.Responses;
 using Domain.Entities;
 using Domain.Enums;
 using Infrastructure.Data;
+using Infrastructure.Email;
 using Infrastructure.Hashing;
 using Infrastructure.Jwt;
 using Microsoft.EntityFrameworkCore;
@@ -16,13 +17,15 @@ public class AuthorizeService : IAuthorize
     private readonly ApplicationDbContext _context;
     private readonly IHashPassword _hash;
     private readonly IJwtProvider _jwt;
+    private readonly ISendMail _mail;
 
     public AuthorizeService(ApplicationDbContext context,  IHashPassword hash,
-        IJwtProvider jwt)
+        IJwtProvider jwt, ISendMail mail)
     {
         _context = context;
         _hash = hash;
         _jwt = jwt;
+        _mail = mail;
     }
     
     public async Task<Response<string>> CreatedUser(CreatedUser dto)
@@ -38,23 +41,16 @@ public class AuthorizeService : IAuthorize
             Email = dto.Email
         };
         
-        
         await _context.Users.AddAsync(created);
         
         var orders = await _context.Orders
             .Where(x => x.UserId == created.Id).ToListAsync();
-
-        var finance = new Finance()
-        {
-            UserId = created.Id,
-            CompletedOrders = 0,
-            TotalOrders = 0,
-            CancelledOrders = 0,
-            NewOrders = 0,
-            TotalRevenue = 0,
-        };
-        await _context.Finances.AddAsync(finance);
+        
         var result = await _context.SaveChangesAsync();
+
+        if (result > 0)
+            await _mail.SendMailLoginAsync(created, dto.Password);
+        
         return result > 0 
             ? new Response<string>(HttpStatusCode.Created, "created new user")
             : new  Response<string>(HttpStatusCode.BadRequest, "not created");

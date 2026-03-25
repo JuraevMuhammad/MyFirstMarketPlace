@@ -19,16 +19,19 @@ public class UserService : IUserService
     private readonly IUserRepository _repository;
     private readonly IHashPassword _hash;
     private readonly ISendMail _mail;
+    private readonly IFinanceRepository _finance;
 
     public UserService(IHttpContextAccessor accessor,
         IUserRepository repository,
         IHashPassword hash,
-        ISendMail mail)
+        ISendMail mail,
+        IFinanceRepository finance)
     {
         _accessor = accessor;
         _repository = repository;
         _hash = hash;
         _mail = mail;
+        _finance = finance;
     }
 
     #region GetUserById
@@ -139,10 +142,26 @@ public class UserService : IUserService
             HashPassword = _hash.Generate(dto.Password),
             Role = Roles.User
         };
-
+        
         var result = await _repository.CreateUserAsync(createdUser);
-        if (result > 0)
+        
+        var finance = new Finance()
+        {
+            UserId = createdUser.Id,
+            CompletedOrders = 0,
+            TotalOrders = 0,
+            CancelledOrders = 0,
+            NewOrders = 0,
+            TotalRevenue = 0,
+        };
+        
+        var res = await _finance.CreatedFinance(finance);
+        
+        if (result > 0 && res > 0)
             await _mail.SendMailLoginAsync(createdUser, dto.Password);
+        else
+            return new Response<string>(HttpStatusCode.BadRequest, "error");
+        
         return new Response<string>(HttpStatusCode.Created, $"Created User Id:{result} user password: {dto.Password}");
     }
 

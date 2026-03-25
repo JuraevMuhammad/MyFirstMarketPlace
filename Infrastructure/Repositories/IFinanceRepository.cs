@@ -10,4 +10,5 @@ public interface IFinanceRepository
     Task<List<ItemFinance>?> GetItemFinances(int id);
     Task<int> CreateItemFinance(ItemFinance dto, Finance finance);
     Task<List<ItemFinance>?> GetFinanceFilter(FinanceFilter filter);
+    Task<int> CreatedFinance(Finance finance);
 }

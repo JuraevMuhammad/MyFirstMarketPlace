@@ -83,4 +83,11 @@ public class FinanceRepository : IFinanceRepository
             .Take(filter.PageSize)
             .ToListAsync();
     }
+
+    public async Task<int> CreatedFinance(Finance finance)
+    {
+        await _context.Finances.AddAsync(finance);
+        var result = await _context.SaveChangesAsync();
+        return result;
+    }
 }
