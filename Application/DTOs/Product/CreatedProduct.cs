@@ -15,6 +15,4 @@ public class CreatedProduct
     public required string Description { get; set; }
     [Required]
     public required decimal Price { get; set; }
-    [Required]
-    public required List<IFormFile> Images { get; set; }
 }

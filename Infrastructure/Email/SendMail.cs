@@ -31,4 +31,26 @@ public class SendMail : ISendMail
 
         await smtp.SendMailAsync(mailMessage);
     }
+
+    public async Task SendMailLoginAsync(User user, string password)
+    {
+        var from = new MailAddress(_options.From, "Market");
+        var to = new MailAddress(user.Email, user.Username);
+
+        using var mailMessage = new MailMessage(from, to);
+        mailMessage.Subject = user.Email;
+        mailMessage.Body = $"""
+                            Hallo {user.Username}
+                            Your LogIn: {user.Username}
+                            Your Password: {password}
+                            """;
+
+        using var smtp = new SmtpClient(_options.Host, _options.Port);
+        smtp.EnableSsl = true;
+        smtp.DeliveryMethod = SmtpDeliveryMethod.Network;
+        smtp.UseDefaultCredentials = false;
+        smtp.Credentials = new NetworkCredential(_options.UserName, _options.Password);
+
+        await smtp.SendMailAsync(mailMessage);
+    }
 }

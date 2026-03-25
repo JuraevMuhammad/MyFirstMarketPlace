@@ -44,12 +44,12 @@ public class ProductService : IProductService
             Name = x.Name,
             Description = x.Description,
             Price = x.Price,
-            Images = x.FileImage,
             ItemProducts = (x.ItemProducts ?? []).Select(ip => new GetItemProduct()
             {
                 Size = ip.Size,
                 Color = ip.ColorProduct,
-                Quantity = ip.Quantity
+                Quantity = ip.Quantity,
+                Images = ip.Images
             }).ToList()
         }).ToList();
         
@@ -75,8 +75,7 @@ public class ProductService : IProductService
             UserId = id,
             Name = dto.Name,
             Description = dto.Description,
-            Price = dto.Price,
-            FileImage = await _file.SaveFilesAsync(dto.Images, "product")
+            Price = dto.Price
         };
 
         var result =await _repository.CreateProduct(product);
@@ -138,8 +137,7 @@ public class ProductService : IProductService
             Description = product.Description,
             Name = product.Name,
             Price = product.Price,
-            UserId = product.UserId,
-            Images = product.FileImage
+            UserId = product.UserId
         };
         return new Response<GetProduct>(getProduct);
     }

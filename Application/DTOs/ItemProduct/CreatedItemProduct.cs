@@ -10,4 +10,6 @@ public class CreatedItemProduct
     public SizeProduct? Size { get; set; }
     public ColorProduct? Color { get; set; }
     public int Quantity { get; set; }
+    [Required]
+    public required List<IFormFile> Images { get; set; }
 }

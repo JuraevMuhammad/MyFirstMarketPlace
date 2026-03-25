@@ -5,16 +5,19 @@ using Application.Responses;
 using Domain.Entities;
 using Domain.Enums;
 using Infrastructure.Repositories;
+using Infrastructure.SaveFile;
 
 namespace Infrastructure.Services;
 
 public class ItemProductService : IItemProductService
 {
     private readonly IItemProductRepository _repository;
+    private readonly IFileStorage _file;
 
-    public ItemProductService(IItemProductRepository repository)
+    public ItemProductService(IItemProductRepository repository, IFileStorage file)
     {
         _repository = repository;
+        _file = file;
     }
     
     public async Task<Response<string>> CreateItemProduct(CreatedItemProduct dto)
@@ -25,6 +28,7 @@ public class ItemProductService : IItemProductService
             Size = dto.Size ?? SizeProduct.NoSize,
             ColorProduct = dto.Color ?? ColorProduct.NoColor,
             Quantity = dto.Quantity,
+            Images = await _file.SaveFilesAsync(dto.Images, "product")
         };
 
         var result = await _repository.CreateItemProduct(itemProduct);

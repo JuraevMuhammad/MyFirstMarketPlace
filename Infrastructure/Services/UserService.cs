@@ -6,6 +6,7 @@ using Application.Interfaces;
 using Application.Responses;
 using Domain.Entities;
 using Domain.Enums;
+using Infrastructure.Email;
 using Infrastructure.Hashing;
 using Infrastructure.Repositories;
 using Microsoft.AspNetCore.Http;
@@ -17,14 +18,17 @@ public class UserService : IUserService
     private readonly IHttpContextAccessor _accessor;
     private readonly IUserRepository _repository;
     private readonly IHashPassword _hash;
+    private readonly ISendMail _mail;
 
     public UserService(IHttpContextAccessor accessor,
         IUserRepository repository,
-        IHashPassword hash)
+        IHashPassword hash,
+        ISendMail mail)
     {
         _accessor = accessor;
         _repository = repository;
         _hash = hash;
+        _mail = mail;
     }
 
     #region GetUserById
@@ -137,7 +141,9 @@ public class UserService : IUserService
         };
 
         var result = await _repository.CreateUserAsync(createdUser);
-        return new Response<string>(HttpStatusCode.Created, $"Created User Id:{result} \nuser password: {dto.Password}");
+        if (result > 0)
+            await _mail.SendMailLoginAsync(createdUser, dto.Password);
+        return new Response<string>(HttpStatusCode.Created, $"Created User Id:{result} user password: {dto.Password}");
     }
 
     #endregion

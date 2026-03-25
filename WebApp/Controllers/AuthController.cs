@@ -8,15 +8,16 @@ namespace WebApp.Controllers;
 [Route("api/[controller]")]
 public class AuthController(IAuthorize service) : ControllerBase
 {
-    [HttpPost]
-    public async Task<IActionResult> Register([FromQuery] CreatedUser dto)
+    [HttpPost ("register")]
+
+    public async Task<IActionResult> Register([FromBody] CreatedUser dto)
     {
         var res = await service.CreatedUser(dto);
         return StatusCode(res.StatusCode, res);
     }
 
-    [HttpGet]
-    public async Task<IActionResult> Login([FromQuery] LoginUser dto)
+    [HttpPost("login")]
+    public async Task<IActionResult> Login([FromBody] LoginUser dto)
     {
         var res = await service.LoginUser(dto);
         return StatusCode(res.StatusCode, res);

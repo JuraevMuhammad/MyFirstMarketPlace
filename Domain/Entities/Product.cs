@@ -14,10 +14,8 @@ public class Product : BaseEntity
     public required string Description { get; set; }
     [Required]
     public required decimal Price { get; set; }
-    [Required]
-    public required List<string> FileImage { get; set; }
-    
-    public List<ItemProduct>? ItemProducts { get; set; }
+
+    public List<ItemProduct> ItemProducts { get; set; } = [];
     public List<Order>? Orders { get; set; }
     public Category? Category { get; set; }
     public User? User { get; set; }

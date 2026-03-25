@@ -43,7 +43,7 @@ public class UserController(IUserService service) : ControllerBase
 
     [Authorize(Roles = "Admin")]
     [HttpPost("/create-user")]
-    public async Task<IActionResult> CreateUser([FromQuery]CreatedUser dto)
+    public async Task<IActionResult> CreateUser([FromBody]CreatedUser dto)
     {
         var res = await service.CreateUser(dto);
         return StatusCode(res.StatusCode, res);

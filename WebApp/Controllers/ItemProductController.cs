@@ -12,7 +12,7 @@ public class ItemProductController(IItemProductService service) : ControllerBase
 {
     [Authorize(Roles = nameof(Roles.User) + "," + nameof(Roles.Admin))]
     [HttpPost]
-    public async Task<IActionResult> CreateItemProduct([FromQuery]CreatedItemProduct dto)
+    public async Task<IActionResult> CreateItemProduct([FromForm]CreatedItemProduct dto)
     {
         var res = await service.CreateItemProduct(dto);
         return StatusCode(res.StatusCode, res);

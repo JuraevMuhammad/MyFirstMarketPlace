@@ -13,8 +13,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260305165256_createdAllEntities")]
-    partial class createdAllEntities
+    [Migration("20260325131133_init2")]
+    partial class init2
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -75,6 +75,12 @@ namespace Infrastructure.Migrations
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<decimal>("Expenses")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("Income")
+                        .HasColumnType("numeric");
+
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
 
@@ -101,6 +107,42 @@ namespace Infrastructure.Migrations
                     b.ToTable("Finances");
                 });
 
+            modelBuilder.Entity("Domain.Entities.ItemFinance", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("numeric");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("FinanceId")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FinanceId");
+
+                    b.ToTable("ItemFinances");
+                });
+
             modelBuilder.Entity("Domain.Entities.ItemProduct", b =>
                 {
                     b.Property<int>("Id")
@@ -109,7 +151,7 @@ namespace Infrastructure.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("Color")
+                    b.Property<int>("ColorProduct")
                         .HasColumnType("integer");
 
                     b.Property<DateTime>("CreatedAt")
@@ -118,7 +160,7 @@ namespace Infrastructure.Migrations
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.PrimitiveCollection<List<string>>("Fhoto")
+                    b.PrimitiveCollection<List<string>>("Images")
                         .IsRequired()
                         .HasColumnType("text[]");
 
@@ -152,7 +194,7 @@ namespace Infrastructure.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("Color")
+                    b.Property<int>("ColorProduct")
                         .HasColumnType("integer");
 
                     b.Property<DateTime>("CreatedAt")
@@ -176,6 +218,9 @@ namespace Infrastructure.Migrations
                         .HasColumnType("integer");
 
                     b.Property<int>("SizeProduct")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Status")
                         .HasColumnType("integer");
 
                     b.Property<decimal>("Sum")
@@ -294,6 +339,17 @@ namespace Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("Domain.Entities.ItemFinance", b =>
+                {
+                    b.HasOne("Domain.Entities.Finance", "Finance")
+                        .WithMany("Items")
+                        .HasForeignKey("FinanceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Finance");
+                });
+
             modelBuilder.Entity("Domain.Entities.ItemProduct", b =>
                 {
                     b.HasOne("Domain.Entities.Product", "Product")
@@ -346,6 +402,11 @@ namespace Infrastructure.Migrations
             modelBuilder.Entity("Domain.Entities.Category", b =>
                 {
                     b.Navigation("Products");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Finance", b =>
+                {
+                    b.Navigation("Items");
                 });
 
             modelBuilder.Entity("Domain.Entities.Product", b =>
