@@ -74,6 +74,8 @@
 - PostgreSQL / SQL Server
 - Telegram Bot API
 - JWT Authentication
+- REDIS CACHE
+- Backgroud Task Hangfire
 
 ---
 
