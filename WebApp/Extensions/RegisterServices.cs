@@ -6,6 +6,7 @@ using Infrastructure.Redis;
 using Infrastructure.Repositories;
 using Infrastructure.SaveFile;
 using Infrastructure.Services;
+using Infrastructure.Telegram;
 using StackExchange.Redis;
 
 namespace WebApp.Extensions;

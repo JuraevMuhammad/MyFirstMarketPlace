@@ -5,6 +5,7 @@ using Infrastructure.Data;
 using Infrastructure.Email;
 using Infrastructure.Jwt;
 using Infrastructure.Seed;
+using Infrastructure.Telegram;
 using Microsoft.EntityFrameworkCore;
 using WebApp.Extensions;
 
@@ -12,6 +13,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.Configure<JwtOption>(builder.Configuration.GetSection(nameof(JwtOption)));
 builder.Services.Configure<EmailOptions>(builder.Configuration.GetSection(nameof(EmailOptions)));
+builder.Services.Configure<TelegramSettings>(builder.Configuration.GetSection(nameof(TelegramSettings)));
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();

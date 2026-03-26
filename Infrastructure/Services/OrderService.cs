@@ -6,6 +6,7 @@ using Application.Responses;
 using Domain.Entities;
 using Domain.Enums;
 using Infrastructure.Repositories;
+using Infrastructure.Telegram;
 using Microsoft.AspNetCore.Http;
 
 namespace Infrastructure.Services;

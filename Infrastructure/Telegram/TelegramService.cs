@@ -1,27 +1,28 @@
 ﻿using Application.Interfaces;
 using Domain.Entities;
+using Microsoft.Extensions.Options;
 
-namespace Infrastructure.Services;
+namespace Infrastructure.Telegram;
 
 public class TelegramService : ITelegramService
 {
     private readonly HttpClient _httpClient;
-
-    private const string Token = "7705064539:AAGV1jdLu08BKFApdlY1Wo0fFUS6uY75Hh0";
-    private const string ChatId = "5426464671";
-
-    public TelegramService(HttpClient httpClient)
+    private readonly TelegramSettings _telegram;
+    
+    public TelegramService(HttpClient httpClient, IOptions<TelegramSettings> telegram)
     {
         _httpClient = httpClient;
+        _telegram = telegram.Value;
     }
 
     public async Task SendMessage(string message)
     {
-        const string url = $"https://api.telegram.org/bot{Token}/sendMessage";
+        var token = _telegram.TelegramToken;
+        var url = $"https://api.telegram.org/bot{token}/sendMessage";
 
         var data = new Dictionary<string, string>
         {
-            { "chat_id", ChatId },
+            { "chat_id", _telegram.TelegramChatId },
             { "text", message }
         };
 
