@@ -19,6 +19,14 @@ public class ProductController(IProductService service) : ControllerBase
         return StatusCode(res.StatusCode, res);
     }
 
+    [Authorize(Roles = nameof(Roles.User))]
+    [HttpGet("my-product")]
+    public async Task<IActionResult> GetMyProduct()
+    {
+        var res = await service.GetProductsMe();
+        return StatusCode(res.StatusCode, res);
+    }
+
     [HttpGet("filter")]
     public async Task<IActionResult> GetProducts([FromQuery]ProductFilter filter)
     {
