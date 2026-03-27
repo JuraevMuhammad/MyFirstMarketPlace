@@ -143,4 +143,36 @@ public class ProductService : IProductService
     }
 
     #endregion
+
+    public async Task<Response<List<GetProduct>>> GetProductsMe()
+    {
+        var id = _accessor.HttpContext?.User.FindFirstValue("userId");
+        if (!int.TryParse(id, out var myId))
+            return new Response<List<GetProduct>>(HttpStatusCode.Unauthorized, "invalid token");
+
+        var products = await _repository.GetMyProducts(myId);
+        
+        if(products == null || products.Count == 0)
+            return new Response<List<GetProduct>>(HttpStatusCode.NotFound, "not found");
+
+        var getProducts = products.Select(x => new GetProduct()
+        {
+            Id = x.Id,
+            UserId = x.UserId,
+            CategoryId = x.CategoryId,
+            Name = x.Name,
+            Description = x.Description,
+            Price = x.Price,
+            ItemProducts = x.ItemProducts
+                .Select(ip => new GetItemProduct()
+                {
+                    Size = ip.Size,
+                    Color = ip.ColorProduct,
+                    Quantity = ip.Quantity,
+                    Images = ip.Images
+                }).ToList()
+        }).ToList();
+        
+        return new Response<List<GetProduct>>(getProducts);
+    }
 }

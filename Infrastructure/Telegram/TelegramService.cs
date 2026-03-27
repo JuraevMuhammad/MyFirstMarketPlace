@@ -38,6 +38,8 @@ public class TelegramService : ITelegramService
 
     public Task SendPhoto(string photoUrl)
     {
+        var url = $"https://api.telegram.org/bot{_telegram.TelegramToken}/sendMessage";
         throw new NotImplementedException();
+        
     }
 }

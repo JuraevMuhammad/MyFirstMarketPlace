@@ -11,4 +11,5 @@ public interface IProductService
     Task<Response<string>> UpdateProduct(int id, UpdatedProduct dto);
     Task<Response<string>> DeleteProduct(int id);
     Task<Response<GetProduct>> GetProductById(int id);
+    Task<Response<List<GetProduct>>> GetProductsMe();
 }

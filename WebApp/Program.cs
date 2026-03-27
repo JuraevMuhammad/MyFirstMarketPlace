@@ -63,8 +63,8 @@ using (var scope = app.Services.CreateScope())
 {
     //seed
     var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    await context.Database.MigrateAsync();
     var serviceProvider = scope.ServiceProvider;
+    await context.Database.MigrateAsync();
     await SeedAdmin.Initialize(serviceProvider);
     
     //Background Task

@@ -78,4 +78,12 @@ public class ProductRepository : IProductRepository
         await _cache.SetDataAsync(key, product);
         return product;
     }
+
+    public async Task<List<Product>?> GetMyProducts(int id)
+    {
+        var products = await _context.Products
+            .Include(x => x.ItemProducts)
+            .Where(x => x.UserId == id).ToListAsync();
+        return products;
+    }
 }
