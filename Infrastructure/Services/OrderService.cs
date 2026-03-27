@@ -28,7 +28,9 @@ public class OrderService : IOrderService
         _repository = repository;
         _accessor = accessor;
     }
-    
+
+    #region CreateOrder
+
     public async Task<Response<string>> CreateOrder(CreatedOrder order)
     {
         var id = _accessor.HttpContext?.User.FindFirstValue("userId");
@@ -49,6 +51,10 @@ public class OrderService : IOrderService
             Status = OrderStatus.Created,
         };
         var result = await _repository.CreateOrder(create);
+        
+        if(result == null)
+            return new Response<string>(HttpStatusCode.NotFound, "the product equals zero");
+        
         if(result <= 0)
             return new Response<string>(HttpStatusCode.BadRequest, "failed to create order");
 
@@ -56,17 +62,21 @@ public class OrderService : IOrderService
                                пришёл заказ №{create.Id}
                                Customer Name: {create.Name}
                                Customer Phone Number: {create.PhoneNumber}
-                               
+
                                ProductId: {create.ProductId}
                                ColorProduct: {create.ColorProduct}
                                SizeProduct: {create.SizeProduct}
-                               
+
                                Price: {create.Sum}
                                """;
         
         await _telegram.SendMessage(telegramMessage);
         return new Response<string>(HttpStatusCode.Created, "created order successfully");
     }
+
+    #endregion
+
+    #region GetOrders
 
     public async Task<Response<List<GetOrder>>> GetOrders()
     {
@@ -91,6 +101,10 @@ public class OrderService : IOrderService
         return new Response<List<GetOrder>>(getOrders);
     }
 
+    #endregion
+
+    #region GetOrderById
+
     public async Task<Response<GetOrder>> GetOrder(int orderId)
     {
         var order = await _repository.GetOrder(orderId);
@@ -114,6 +128,10 @@ public class OrderService : IOrderService
         return new Response<GetOrder>(getOrder);
     }
 
+    #endregion
+
+    #region UpdateOrder
+
     public async Task<Response<string>> UpdateOrder(int id, UpdateOrder order)
     {
         var dbOrder = await _repository.GetOrder(id);
@@ -126,5 +144,35 @@ public class OrderService : IOrderService
         return result > 0
             ? new Response<string>(HttpStatusCode.OK, "updated order successfully")
             : new Response<string>(HttpStatusCode.BadRequest, "updated order failed");
+    }
+
+    #endregion
+
+    public async Task<Response<List<GetOrder>>> GetMyOrders()
+    {
+        var id = _accessor.HttpContext?.User.FindFirstValue("userId");
+        if (!int.TryParse(id, out var userId))
+            return new Response<List<GetOrder>>(HttpStatusCode.Unauthorized, "invalid token");
+
+        var orders = await _repository.GetMyOrders(userId);
+        
+        if(orders == null)
+            return new Response<List<GetOrder>>(HttpStatusCode.NotFound, "not found");
+
+        var getOrders = orders.Select(x => new GetOrder()
+        {
+            Id = x.Id,
+            SizeProduct = x.SizeProduct,
+            ColorProduct = x.ColorProduct,
+            Name = x.Name,
+            ProductId = x.ProductId,
+            PhoneNumber = x.PhoneNumber,
+            UserId = x.UserId,
+            Status = x.Status,
+            Sum = x.Sum,
+            CreateOrder = x.CreatedAt
+        }).ToList();
+        
+        return new Response<List<GetOrder>>(getOrders);
     }
 }

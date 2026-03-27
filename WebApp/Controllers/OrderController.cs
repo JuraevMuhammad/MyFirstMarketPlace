@@ -26,6 +26,14 @@ public class OrderController(IOrderService service) : ControllerBase
         return StatusCode(res.StatusCode, res);
     }
 
+    [Authorize(Roles = nameof(Roles.User) + "," + nameof(Roles.Customer))]
+    [HttpGet("my-orders")]
+    public async Task<IActionResult> GetMyOrders()
+    {
+        var res = await service.GetMyOrders();
+        return StatusCode(res.StatusCode, res);
+    }
+
     [Authorize(Roles = nameof(Roles.Admin))]
     [HttpGet("list")]
     public async Task<IActionResult> GetOrders()
