@@ -15,8 +15,10 @@ public class OrderRepository : IOrderRepository
     {
         _context = context;
     }
-    
-    public async Task<int> CreateOrder(Order order)
+
+    #region CreateOrder
+
+    public async Task<int?> CreateOrder(Order order)
     {
         await using var transaction = await _context.Database.BeginTransactionAsync();
         //quantity - 1
@@ -26,10 +28,10 @@ public class OrderRepository : IOrderRepository
         if (product == null)
             return 0;
         
-        var res = product.ItemProducts?.FirstOrDefault(item =>
+        var res = product.ItemProducts.FirstOrDefault(item =>
             item.ColorProduct == order.ColorProduct && item.Size == order.SizeProduct);
         if (res == null || res.Quantity <= 0)
-            return 0;
+            return null;
         
         res.Quantity -= 1;
         
@@ -56,17 +58,29 @@ public class OrderRepository : IOrderRepository
         return result;
     }
 
+    #endregion
+
+    #region GetOrder
+
     public async Task<Order?> GetOrder(int orderId)
     {
         var order = await _context.Orders.FirstOrDefaultAsync(x => x.Id == orderId);
         return order;
     }
 
+    #endregion
+
+    #region GetOrders
+
     public async Task<List<Order>?> GetOrders()
     {
         var orders = await _context.Orders.ToListAsync();
         return orders;
     }
+
+    #endregion
+
+    #region UpdateOrder
 
     public async Task<int> UpdateOrder(Order order)
     {
@@ -97,5 +111,57 @@ public class OrderRepository : IOrderRepository
         var result = await _context.SaveChangesAsync();
         
         return result;
+    }
+
+    #endregion
+
+    public async Task<List<Order>?> GetMyOrders(int id)
+    {
+        var user = await _context.Users.FirstOrDefaultAsync(x => x.Id == id);
+        
+        if(user == null)
+            return null;
+        
+        if(user.Role == Roles.Customer)
+            return await _context.Orders
+                .Where(x => x.UserId == user.Id)
+                .ToListAsync();
+        
+        if(user.Role == Roles.User)
+            return await _context.Orders
+                .Where(x => x.Product != null && x.Product.UserId == user.Id)
+                .Include(x => x.Product)
+                .ToListAsync();
+        
+        return null;
+
+        // var userCustomer = await _context.Users
+        //     .FirstOrDefaultAsync(x => !x.IsDeleted && x.Id == id && x.Role == Roles.Customer);
+        //
+        // if (userCustomer != null)
+        // {
+        //     var customerOrders = await _context.Orders.Where(x => x.UserId == id).ToListAsync();
+        //     return customerOrders;
+        // }
+        //
+        // var userSeller = await _context.Users.Include(x => x.Products)
+        //     .FirstOrDefaultAsync(x => !x.IsDeleted && x.Id == id && x.Role == Roles.User);
+        //
+        // if (userSeller == null)
+        //     return null;
+        //
+        // var products = await _context.Products.Where(x => x.UserId == userSeller.Id).ToListAsync();
+        //
+        // var sellerOrders = await _context.Orders.ToListAsync();
+        //
+        // List<Order> orders = [];
+        //
+        // foreach (var item in products)
+        // {
+        //     var order = sellerOrders.Where(x => x.ProductId == item.Id).ToList();
+        //     orders!.AddRange(order);
+        // }
+        //
+        // return orders;
     }
 }

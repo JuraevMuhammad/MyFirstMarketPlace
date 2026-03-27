@@ -10,4 +10,5 @@ public interface IOrderService
     Task<Response<List<GetOrder>>> GetOrders();
     Task<Response<GetOrder>> GetOrder(int orderId);
     Task<Response<string>> UpdateOrder(int id, UpdateOrder order);
+    Task<Response<List<GetOrder>>> GetMyOrders();
 }

@@ -144,6 +144,8 @@ public class ProductService : IProductService
 
     #endregion
 
+    #region GetMyProducts
+
     public async Task<Response<List<GetProduct>>> GetProductsMe()
     {
         var id = _accessor.HttpContext?.User.FindFirstValue("userId");
@@ -175,4 +177,6 @@ public class ProductService : IProductService
         
         return new Response<List<GetProduct>>(getProducts);
     }
+
+    #endregion
 }
