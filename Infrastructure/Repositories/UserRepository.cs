@@ -49,13 +49,21 @@ public class UserRepository : IUserRepository
     public async Task<User?> GetUserByIdAsync(int userId)
     {
         var cacheKey = $"user:{userId}";
-        
-        var cacheUser = await _cache.GetDataAsync<User>(cacheKey);
-        if (cacheUser != null)
+
+        try
         {
-            Console.WriteLine("=======Get In Cache=======");
-            return cacheUser;
+            var cacheUser = await _cache.GetDataAsync<User>(cacheKey);
+            if (cacheUser != null)
+            {
+                Console.WriteLine("=======Get In Cache=======");
+                return cacheUser;
+            }
         }
+        catch
+        {
+            throw new Exception("error redis");
+        }
+        
         
         var user = await _context.Users
             .FirstOrDefaultAsync(x => x.Id == userId && !x.IsDeleted);
