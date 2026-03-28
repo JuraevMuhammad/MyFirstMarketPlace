@@ -148,6 +148,8 @@ public class OrderService : IOrderService
 
     #endregion
 
+    #region GetMyOrders
+
     public async Task<Response<List<GetOrder>>> GetMyOrders()
     {
         var id = _accessor.HttpContext?.User.FindFirstValue("userId");
@@ -175,4 +177,6 @@ public class OrderService : IOrderService
         
         return new Response<List<GetOrder>>(getOrders);
     }
+
+    #endregion
 }

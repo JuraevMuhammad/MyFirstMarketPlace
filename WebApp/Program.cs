@@ -46,13 +46,12 @@ builder.Services.AddHangfireServer();
 var app = builder.Build();
 
 
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
 
-app.UseHttpsRedirection();
+app.UseSwagger();
+app.UseSwaggerUI();
+app.Urls.Add("http://0.0.0.0:80");
+
+// app.UseHttpsRedirection();
 
 app.UseAuthentication();
 app.UseAuthorization();
