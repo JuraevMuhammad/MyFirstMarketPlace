@@ -104,12 +104,76 @@
 
 ---
 
-## 🚀 Запуск проекта
-1. Клонировать репозиторий
-2. Настроить appsettings.json
-3. Выполнить миграции:
-  ``dotnet ef database update -p Infrastructure -s WebApp``
-4. Запустить проект: ``dotnet run --project WebApp``
+# 🚀 Запуск проекта
+
+## 📦 Вариант 1 — через Docker (рекомендуется)
+
+### 1. Клонировать репозиторий
+
+```bash
+git clone <your-repo-url>
+cd MarketPlace
+```
+
+---
+
+### 2. Создать `.env` файл (если используется)
+
+```env
+POSTGRES_DB=Quality
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=1234
+REDIS_CONNECTION=redis:6379
+```
+
+---
+
+### 3. Запустить проект
+
+```bash
+docker-compose up --build
+```
+
+---
+
+### 4. Открыть Swagger
+
+```
+http://localhost:8080/swagger
+```
+---
+## 💻 Вариант 2 — запуск без Docker
+
+### 1. Настроить `appsettings.json`
+
+Указать:
+
+* строку подключения к PostgreSQL
+* Redis
+* JWT
+* Email / Telegram (если используются)
+
+---
+### 3. Запустить проект
+
+```bash
+dotnet run --project WebApp
+```
+
+---
+
+## 🧠 Требования
+
+* .NET 8/9 SDK
+* Docker + Docker Compose
+* PostgreSQL (если без Docker)
+* Redis (если используется кеш)
+---
+## ⚠️ Важно
+
+* Не храните секреты в `appsettings.json`
+* Используйте `.env` или переменные окружения
+* Убедитесь, что порты 8080, 5432, 6379 свободны
 
 ---
 
@@ -123,9 +187,9 @@
  ## 📬 Будущие улучшения
  
 - Добавить корзину
-- История заказов
-- Онлайн оплата
-- Фильтрация товаров
+- История заказов ✅
+- Онлайн оплата 
+- Фильтрация товаров ✅
 
 
 # 👨‍💻 Автор
