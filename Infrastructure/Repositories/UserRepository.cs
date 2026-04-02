@@ -55,7 +55,7 @@ public class UserRepository : IUserRepository
             var cacheUser = await _cache.GetDataAsync<User>(cacheKey);
             if (cacheUser != null)
             {
-                Console.WriteLine("=======Getdd In Cache=======");
+                Console.WriteLine("=======Get In Cache=======");
                 return cacheUser;
             }
         }

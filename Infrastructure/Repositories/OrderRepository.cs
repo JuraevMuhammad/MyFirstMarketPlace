@@ -30,6 +30,7 @@ public class OrderRepository : IOrderRepository
         
         var res = product.ItemProducts.FirstOrDefault(item =>
             item.ColorProduct == order.ColorProduct && item.Size == order.SizeProduct);
+        
         if (res == null || res.Quantity <= 0)
             return null;
         

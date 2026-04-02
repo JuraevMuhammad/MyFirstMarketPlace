@@ -9,7 +9,7 @@ namespace WebApp.Controllers;
 public class AuthController(IAuthorize service) : ControllerBase
 {
     [HttpPost ("register")]
-
+    
     public async Task<IActionResult> Register([FromBody] CreatedUser dto)
     {
         var res = await service.CreatedUser(dto);

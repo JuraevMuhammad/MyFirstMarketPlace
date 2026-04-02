@@ -144,25 +144,30 @@ public class UserService : IUserService
         };
         
         var result = await _repository.CreateUserAsync(createdUser);
-        
-        var finance = new Finance()
+
+        if (result > 0)
         {
-            UserId = createdUser.Id,
-            CompletedOrders = 0,
-            TotalOrders = 0,
-            CancelledOrders = 0,
-            NewOrders = 0,
-            TotalRevenue = 0,
-        };
-        
-        var res = await _finance.CreatedFinance(finance);
-        
-        if (result > 0 && res > 0)
-            await _mail.SendMailLoginAsync(createdUser, dto.Password);
-        else
-            return new Response<string>(HttpStatusCode.BadRequest, "error");
-        
-        return new Response<string>(HttpStatusCode.Created, $"Created User Id:{result} user password: {dto.Password}");
+            var finance = new Finance()
+            {
+                UserId = createdUser.Id,
+                CompletedOrders = 0,
+                TotalOrders = 0,
+                CancelledOrders = 0,
+                NewOrders = 0,
+                TotalRevenue = 0,
+            };
+
+            var res = await _finance.CreatedFinance(finance);
+
+            if (res > 0)
+                await _mail.SendMailLoginAsync(createdUser, dto.Password);
+            else
+                return new Response<string>(HttpStatusCode.BadRequest, "error");
+
+            return new Response<string>(HttpStatusCode.Created,
+                $"Created User Id:{result} user password: {dto.Password}");
+        }
+        return new Response<string>(HttpStatusCode.BadRequest, "error");
     }
 
     #endregion
