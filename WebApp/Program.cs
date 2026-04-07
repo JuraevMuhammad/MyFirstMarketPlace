@@ -47,10 +47,13 @@ var app = builder.Build();
 
 
 
-app.UseSwagger();
-app.UseSwaggerUI();
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
 
-app.Urls.Add("http://0.0.0.0:80");
+// app.Urls.Add("http://0.0.0.0:80");
 
 if (!app.Environment.IsDevelopment())
 {
